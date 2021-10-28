@@ -1,0 +1,31 @@
+[jwt]
+expireDuration = 24
+secret = "i1ydX9RtHyuJTrw7frcu"
+
+[mysql]
+[mysql.base]
+connMaxLifeTime = 60
+maxIdleConn = 60
+maxOpenConn = 10
+addr = "127.0.0.1:3306"
+name = "seckill"
+pass = ""
+user = "root"
+
+[redis]
+addr = "127.0.0.1:6379"
+db = "0"
+maxRetries = 3
+minIdleConns = 5
+pass = ""
+poolSize = 10
+
+[log]
+logPath = "./seckill-shop.log"
+level = "debug" # DEBUG INFO WARN ERROR
+stdout = true
+
+[server]
+serverName = "seckill-shop"
+host = ":8081"
+pprof = false
