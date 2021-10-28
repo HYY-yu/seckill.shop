@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -16,7 +17,7 @@ var _ Repo = (*dbRepo)(nil)
 
 type Repo interface {
 	i()
-	GetDb() *gorm.DB
+	GetDb(ctx context.Context) *gorm.DB
 	DbClose() error
 }
 
@@ -38,8 +39,8 @@ func New() (Repo, error) {
 
 func (d *dbRepo) i() {}
 
-func (d *dbRepo) GetDb() *gorm.DB {
-	return d.Db
+func (d *dbRepo) GetDb(ctx context.Context) *gorm.DB {
+	return d.Db.WithContext(ctx)
 }
 
 func (d *dbRepo) DbClose() error {

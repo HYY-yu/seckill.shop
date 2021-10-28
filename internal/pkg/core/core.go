@@ -3,13 +3,8 @@ package core
 import (
 	"errors"
 	"fmt"
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/propagation"
-	"go.opentelemetry.io/otel/trace"
 	"net/http"
-	"net/url"
 	"runtime/debug"
-	"strings"
 	"time"
 
 	"github.com/gin-contrib/pprof"
@@ -18,7 +13,6 @@ import (
 	cors "github.com/rs/cors/wrapper/gin"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/swaggo/gin-swagger/swaggerFiles"
-	"go.uber.org/multierr"
 	"go.uber.org/zap"
 	"golang.org/x/time/rate"
 
@@ -43,9 +37,6 @@ type option struct {
 
 // OnPanicNotify 发生panic时通知用
 type OnPanicNotify func(ctx Context, err interface{}, stackInfo string)
-
-// RecordMetrics 记录prometheus指标用
-type RecordMetrics func(method, uri string, success bool, httpCode, businessCode int, costSeconds float64, traceId string)
 
 // WithDisablePProf 禁用 pprof
 func WithDisablePProf() Option {
@@ -112,6 +103,7 @@ func WrapAuthHandler(handler func(Context) (userID int64, userName string, err r
 // RouterGroup 包装gin的RouterGroup
 type RouterGroup interface {
 	Group(string, ...HandlerFunc) RouterGroup
+	Use(...HandlerFunc)
 	IRoutes
 }
 
@@ -136,6 +128,10 @@ type router struct {
 func (r *router) Group(relativePath string, handlers ...HandlerFunc) RouterGroup {
 	group := r.group.Group(relativePath, wrapHandlers(handlers...)...)
 	return &router{group: group}
+}
+
+func (r *router) Use(handlers ...HandlerFunc) {
+	r.group.Use(wrapHandlers(handlers...)...)
 }
 
 func (r *router) Any(relativePath string, handlers ...HandlerFunc) {
@@ -189,7 +185,7 @@ var _ Engine = (*engine)(nil)
 // Engine http mux
 type Engine interface {
 	http.Handler
-	Group(relativePath string, handlers ...HandlerFunc) RouterGroup
+	Group(relativePath string) RouterGroup
 }
 
 type engine struct {
@@ -201,9 +197,9 @@ func (m *engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	m.e.ServeHTTP(w, req)
 }
 
-func (m *engine) Group(relativePath string, handlers ...HandlerFunc) RouterGroup {
+func (m *engine) Group(relativePath string) RouterGroup {
 	return &router{
-		group: m.baseGroup.Group(relativePath, wrapHandlers(handlers...)...),
+		group: m.baseGroup.Group(relativePath),
 	}
 }
 
@@ -212,7 +208,7 @@ func New(logger *zap.Logger, options ...Option) (Engine, error) {
 		return nil, errors.New("logger required")
 	}
 
-	gin.SetMode(gin.ReleaseMode)
+	gin.SetMode(gin.DebugMode)
 	mux := &engine{
 		e: gin.New(),
 	}
@@ -265,21 +261,14 @@ func New(logger *zap.Logger, options ...Option) (Engine, error) {
 		ctx.Next()
 	})
 
-	// Log \ Metrics \ Trace ( 可观察性 中间件)
+	// 注册全局 Recover and logger
 	mux.baseGroup.Use(func(ctx *gin.Context) {
-		ts := time.Now()
-
 		c := newContext(ctx)
 		defer releaseContext(c)
 
+		// 注入Logger到Ctx
 		c.init()
 		c.setLogger(logger)
-
-		tr := otel.GetTracerProvider().Tracer(config.Get().Server.ServerName + "/HTTPServer")
-		jCtx := otel.GetTextMapPropagator().Extract(ctx.Request.Context(), propagation.HeaderCarrier(ctx.Request.Header))
-		jCtx, span := tr.Start(jCtx, ctx.Request.URL.String(), trace.WithSpanKind(trace.SpanKindServer))
-
-		ctx.Request.WithContext(jCtx)
 
 		defer func() {
 			if err := recover(); err != nil {
@@ -294,82 +283,6 @@ func New(logger *zap.Logger, options ...Option) (Engine, error) {
 					notify(c, err, stackInfo)
 				}
 			}
-
-			if ctx.Writer.Status() == http.StatusNotFound {
-				return
-			}
-
-			var (
-				businessCode int
-				abortErr     error
-				traceId      string
-			)
-
-			if ctx.IsAborted() {
-				for i := range ctx.Errors { // gin error
-					multierr.AppendInto(&abortErr, ctx.Errors[i])
-				}
-
-				if err := c.abortError(); err != nil { // customer err
-					multierr.AppendInto(&abortErr, err.GetErr())
-					resp := response.NewResponse()
-					resp.Code = err.GetBusinessCode()
-					resp.Message = err.GetMsg()
-
-					ctx.JSON(err.GetHttpCode(), resp)
-				}
-			} else {
-				payload := c.getPayload()
-				resp := response.NewResponse(payload)
-
-				if resp != nil {
-					ctx.JSON(http.StatusOK, resp)
-				}
-			}
-
-			withoutLogPath := []string{
-				basePath + "/metrics",
-				basePath + "/debug",
-				basePath + "/swagger",
-				basePath + "/system",
-			}
-			flag := false
-			for _, e := range withoutLogPath {
-				if strings.HasPrefix(ctx.Request.URL.Path, e) {
-					flag = true
-				}
-			}
-			if flag {
-				return
-			}
-
-			if opt.recordMetrics != nil {
-				uri := c.URI()
-
-				opt.recordMetrics(
-					c.RequestContext().Request.Method,
-					uri,
-					!ctx.IsAborted() && ctx.Writer.Status() == http.StatusOK,
-					ctx.Writer.Status(),
-					businessCode,
-					time.Since(ts).Seconds(),
-					traceId,
-				)
-			}
-			if c.getDisableLog() {
-				return
-			}
-			decodedURL, _ := url.QueryUnescape(ctx.Request.URL.RequestURI())
-
-			logger.Info("core-interceptor",
-				zap.Any("method", ctx.Request.Method),
-				zap.Any("path", decodedURL),
-				zap.Any("http_code", ctx.Writer.Status()),
-				zap.Any("business_code", businessCode),
-				zap.Any("success", !ctx.IsAborted() && ctx.Writer.Status() == http.StatusOK),
-				zap.Any("cost_seconds", time.Since(ts).Seconds()),
-				zap.Error(abortErr),
-			)
 		}()
 
 		ctx.Next()
@@ -409,6 +322,9 @@ func New(logger *zap.Logger, options ...Option) (Engine, error) {
 			ctx.Payload(resp)
 		})
 	}
+
+	// 注册全局 Telemetry
+	mux.Group("").Use(NewOpenTelemetry(opt.recordMetrics).Telemetry)
 
 	return mux, nil
 }

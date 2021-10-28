@@ -17,7 +17,7 @@ addr = "127.0.0.1:6379"
 db = "0"
 maxRetries = 3
 minIdleConns = 5
-pass = ""
+pass = "redis"
 poolSize = 10
 
 [log]

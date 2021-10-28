@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"context"
 	"time"
 
 	"github.com/go-redis/redis/v7"
@@ -24,14 +25,14 @@ var _ Repo = (*cacheRepo)(nil)
 
 type Repo interface {
 	i()
-	Set(key, value string, ttl time.Duration, options ...Option) error
-	Get(key string, options ...Option) (string, error)
-	TTL(key string) (time.Duration, error)
-	Expire(key string, ttl time.Duration) bool
-	ExpireAt(key string, ttl time.Time) bool
-	Del(key string, options ...Option) bool
-	Exists(keys ...string) bool
-	Incr(key string, options ...Option) int64
+	Set(ctx context.Context, key, value string, ttl time.Duration, options ...Option) error
+	Get(ctx context.Context, key string, options ...Option) (string, error)
+	TTL(ctx context.Context, key string) (time.Duration, error)
+	Expire(ctx context.Context, key string, ttl time.Duration) bool
+	ExpireAt(ctx context.Context, key string, ttl time.Time) bool
+	Del(ctx context.Context, key string, options ...Option) bool
+	Exists(ctx context.Context, keys ...string) bool
+	Incr(ctx context.Context, key string, options ...Option) int64
 	Close() error
 }
 
@@ -71,7 +72,7 @@ func redisConnect() (*redis.Client, error) {
 }
 
 // Set set some <key,value> into redis
-func (c *cacheRepo) Set(key, value string, ttl time.Duration, options ...Option) error {
+func (c *cacheRepo) Set(ctx context.Context, key, value string, ttl time.Duration, options ...Option) error {
 	ts := time.Now()
 	opt := newOption()
 	defer func() {
@@ -97,7 +98,7 @@ func (c *cacheRepo) Set(key, value string, ttl time.Duration, options ...Option)
 }
 
 // Get get some key from redis
-func (c *cacheRepo) Get(key string, options ...Option) (string, error) {
+func (c *cacheRepo) Get(ctx context.Context, key string, options ...Option) (string, error) {
 	ts := time.Now()
 	opt := newOption()
 	defer func() {
@@ -122,7 +123,7 @@ func (c *cacheRepo) Get(key string, options ...Option) (string, error) {
 }
 
 // TTL get some key from redis
-func (c *cacheRepo) TTL(key string) (time.Duration, error) {
+func (c *cacheRepo) TTL(ctx context.Context, key string) (time.Duration, error) {
 	ttl, err := c.client.TTL(key).Result()
 	if err != nil {
 		return -1, errors.Wrapf(err, "redis get key: %s err", key)
@@ -132,18 +133,18 @@ func (c *cacheRepo) TTL(key string) (time.Duration, error) {
 }
 
 // Expire expire some key
-func (c *cacheRepo) Expire(key string, ttl time.Duration) bool {
+func (c *cacheRepo) Expire(ctx context.Context, key string, ttl time.Duration) bool {
 	ok, _ := c.client.Expire(key, ttl).Result()
 	return ok
 }
 
 // ExpireAt expire some key at some time
-func (c *cacheRepo) ExpireAt(key string, ttl time.Time) bool {
+func (c *cacheRepo) ExpireAt(ctx context.Context, key string, ttl time.Time) bool {
 	ok, _ := c.client.ExpireAt(key, ttl).Result()
 	return ok
 }
 
-func (c *cacheRepo) Exists(keys ...string) bool {
+func (c *cacheRepo) Exists(ctx context.Context, keys ...string) bool {
 	if len(keys) == 0 {
 		return true
 	}
@@ -151,7 +152,7 @@ func (c *cacheRepo) Exists(keys ...string) bool {
 	return value > 0
 }
 
-func (c *cacheRepo) Del(key string, options ...Option) bool {
+func (c *cacheRepo) Del(ctx context.Context, key string, options ...Option) bool {
 	ts := time.Now()
 	opt := newOption()
 	defer func() {
@@ -175,7 +176,7 @@ func (c *cacheRepo) Del(key string, options ...Option) bool {
 	return value > 0
 }
 
-func (c *cacheRepo) Incr(key string, options ...Option) int64 {
+func (c *cacheRepo) Incr(ctx context.Context, key string, options ...Option) int64 {
 	ts := time.Now()
 	opt := newOption()
 	defer func() {

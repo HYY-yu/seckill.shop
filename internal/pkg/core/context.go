@@ -1,6 +1,8 @@
 package core
 
 import (
+	"bytes"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"sync"
@@ -16,11 +18,10 @@ type HandlerFunc func(c Context)
 
 // 内存缓存
 const (
-	_PayloadName    = "_payload_"
-	_UserID         = "_user_id_"
-	_UserName       = "_user_name_"
-	_AbortErrorName = "_abort_error_"
-	_DisableLog     = "_disable_log_"
+	_Response   = "_response_"
+	_UserID     = "_user_id_"
+	_UserName   = "_user_name_"
+	_DisableLog = "_disable_log_"
 )
 
 var contextPool = &sync.Pool{
@@ -69,14 +70,13 @@ type Context interface {
 
 	// Payload 正确返回
 	Payload(payload interface{})
-	getPayload() interface{}
+	getResponse() interface{}
 
 	// HTML 返回界面
 	HTML(name string, obj interface{})
 
 	// AbortWithError 错误返回
 	AbortWithError(err error)
-	abortError() response.Error
 
 	DisableLog(flag bool)
 	getDisableLog() bool
@@ -148,12 +148,15 @@ func (c *context) setLogger(logger *zap.Logger) {
 }
 
 func (c *context) Payload(payload interface{}) {
-	c.ctx.Set(_PayloadName, payload)
+	resp := response.NewResponse(payload)
+
+	c.ctx.JSON(http.StatusOK, resp)
+	c.ctx.Set(_Response, resp)
 }
 
-func (c *context) getPayload() interface{} {
-	if payload, ok := c.ctx.Get(_PayloadName); ok != false {
-		return payload
+func (c *context) getResponse() interface{} {
+	if resp, ok := c.ctx.Get(_Response); ok != false {
+		return resp
 	}
 	return nil
 }
@@ -175,16 +178,15 @@ func (c *context) AbortWithError(err error) {
 		if httpCode == 0 {
 			httpCode = http.StatusInternalServerError
 		}
-		c.ctx.JSON(httpCode, response.NewResponse())
+
+		resp := response.NewResponse()
+		resp.Code = errResp.GetBusinessCode()
+		resp.Message = errResp.GetMsg()
 
 		c.ctx.AbortWithStatus(httpCode)
-		c.ctx.Set(_AbortErrorName, err)
+		c.ctx.Set(_Response, resp)
+		c.ctx.JSON(httpCode, resp)
 	}
-}
-
-func (c *context) abortError() response.Error {
-	err, _ := c.ctx.Get(_AbortErrorName)
-	return err.(response.Error)
 }
 
 func (c *context) Header() http.Header {
@@ -244,6 +246,12 @@ func (c *context) RequestInputParams() url.Values {
 func (c *context) RequestPostFormParams() url.Values {
 	_ = c.ctx.Request.ParseForm()
 	return c.ctx.Request.PostForm
+}
+
+func (c *context) RequestData() []byte {
+	rawData, _ := c.ctx.GetRawData()
+	c.ctx.Request.Body = ioutil.NopCloser(bytes.NewBuffer(rawData)) // re-construct req body
+	return rawData
 }
 
 // RequestContext 获取GIN的Context

@@ -48,7 +48,6 @@ func before(db *gorm.DB) {
 }
 
 func after(db *gorm.DB) {
-
 	_ts, isExist := db.InstanceGet(startTime)
 	if !isExist {
 		return

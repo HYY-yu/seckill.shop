@@ -52,7 +52,6 @@ func NewApiServer(logger *zap.Logger) (*Server, error) {
 
 	engine, err := core.New(logger,
 		core.WithEnableCors(),
-		core.WithEnableRate(),
 		core.WithRecordMetrics(metrics.RecordMetrics),
 	)
 	if err != nil {
