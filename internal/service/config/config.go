@@ -1,9 +1,10 @@
 package config
 
 import (
+	"time"
+
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
-	"time"
 )
 
 var config = new(Config)

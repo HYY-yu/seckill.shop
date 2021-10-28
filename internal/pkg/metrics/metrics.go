@@ -5,34 +5,33 @@ import (
 	"github.com/spf13/cast"
 )
 
-const (
-	namespace = "xinliangnote"
-	subsystem = "go_gin_api"
-)
+var metricsRequestsTotal *prometheus.CounterVec
 
-// metricsRequestsTotal metrics for request total 计数器（Counter）
-var metricsRequestsTotal = prometheus.NewCounterVec(
-	prometheus.CounterOpts{
-		Namespace: namespace,
-		Subsystem: subsystem,
-		Name:      "requests_total",
-		Help:      "request(ms) total",
-	},
-	[]string{"method", "path"},
-)
+var metricsRequestsCost *prometheus.HistogramVec
 
-// metricsRequestsCost metrics for requests cost 累积直方图（Histogram）
-var metricsRequestsCost = prometheus.NewHistogramVec(
-	prometheus.HistogramOpts{
-		Namespace: namespace,
-		Subsystem: subsystem,
-		Name:      "requests_cost",
-		Help:      "request(ms) cost milliseconds",
-	},
-	[]string{"method", "path", "success", "http_code", "business_code", "cost_milliseconds", "trace_id"},
-)
+func InitMetrics(namespace string, subsystem string) {
+	// metricsRequestsTotal metrics for request total 计数器（Counter）
+	metricsRequestsTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: namespace,
+			Subsystem: subsystem,
+			Name:      "requests_total",
+			Help:      "request(ms) total",
+		},
+		[]string{"method", "path"},
+	)
 
-func init() {
+	// metricsRequestsCost metrics for requests cost 累积直方图（Histogram）
+	metricsRequestsCost = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Namespace: namespace,
+			Subsystem: subsystem,
+			Name:      "requests_cost",
+			Help:      "request(ms) cost milliseconds",
+		},
+		[]string{"method", "path", "success", "http_code", "business_code", "cost_milliseconds", "trace_id"},
+	)
+
 	prometheus.MustRegister(metricsRequestsTotal, metricsRequestsCost)
 }
 

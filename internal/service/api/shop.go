@@ -50,6 +50,9 @@ func NewApiServer(logger *zap.Logger) (*Server, error) {
 	}
 	s.Trace = tp
 
+	// Metrics
+	metrics.InitMetrics(config.Get().Server.ServerName, "api")
+
 	engine, err := core.New(logger,
 		core.WithEnableCors(),
 		core.WithRecordMetrics(metrics.RecordMetrics),
