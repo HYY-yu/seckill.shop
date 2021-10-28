@@ -29,3 +29,6 @@ stdout = true
 serverName = "seckill-shop"
 host = ":8081"
 pprof = false
+
+[jaeger]
+udpEndpoint="http://localhost:14268/api/traces"

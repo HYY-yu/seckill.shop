@@ -175,6 +175,7 @@ func (c *context) AbortWithError(err error) {
 		if httpCode == 0 {
 			httpCode = http.StatusInternalServerError
 		}
+		c.ctx.JSON(httpCode, response.NewResponse())
 
 		c.ctx.AbortWithStatus(httpCode)
 		c.ctx.Set(_AbortErrorName, err)

@@ -45,7 +45,11 @@ type Config struct {
 		ServerName string `toml:"serverName"`
 		Host       string `toml:"host"`
 		Pprof      bool   `toml:"pprof"`
-	}
+	} `toml:"server"`
+
+	Jaeger struct {
+		UdpEndpoint string `toml:"udpEndpoint"`
+	} `toml:"jaeger"`
 }
 
 func init() {

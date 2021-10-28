@@ -69,6 +69,17 @@ func main() {
 				}
 			}
 		},
+		// 关闭 Trace
+		func() {
+			if s.Trace != nil {
+				// Do not make the application hang when it is shutdown.
+				ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+				defer cancel()
+				if err := s.Trace.Shutdown(ctx); err != nil {
+					l.Error("trace close err", zap.Error(err))
+				}
+			}
+		},
 	)
 }
 

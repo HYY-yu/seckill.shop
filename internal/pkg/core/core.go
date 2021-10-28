@@ -3,6 +3,9 @@ package core
 import (
 	"errors"
 	"fmt"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/trace"
 	"net/http"
 	"net/url"
 	"runtime/debug"
@@ -262,7 +265,7 @@ func New(logger *zap.Logger, options ...Option) (Engine, error) {
 		ctx.Next()
 	})
 
-	// Log \ Metrics
+	// Log \ Metrics \ Trace ( 可观察性 中间件)
 	mux.baseGroup.Use(func(ctx *gin.Context) {
 		ts := time.Now()
 
@@ -271,6 +274,12 @@ func New(logger *zap.Logger, options ...Option) (Engine, error) {
 
 		c.init()
 		c.setLogger(logger)
+
+		tr := otel.GetTracerProvider().Tracer(config.Get().Server.ServerName + "/HTTPServer")
+		jCtx := otel.GetTextMapPropagator().Extract(ctx.Request.Context(), propagation.HeaderCarrier(ctx.Request.Header))
+		jCtx, span := tr.Start(jCtx, ctx.Request.URL.String(), trace.WithSpanKind(trace.SpanKindServer))
+
+		ctx.Request.WithContext(jCtx)
 
 		defer func() {
 			if err := recover(); err != nil {
@@ -303,12 +312,16 @@ func New(logger *zap.Logger, options ...Option) (Engine, error) {
 
 				if err := c.abortError(); err != nil { // customer err
 					multierr.AppendInto(&abortErr, err.GetErr())
-					businessCode = err.GetBusinessCode()
+					resp := response.NewResponse()
+					resp.Code = err.GetBusinessCode()
+					resp.Message = err.GetMsg()
 
-					ctx.JSON(err.GetHttpCode(), response.NewResponse())
+					ctx.JSON(err.GetHttpCode(), resp)
 				}
 			} else {
-				resp := c.getPayload()
+				payload := c.getPayload()
+				resp := response.NewResponse(payload)
+
 				if resp != nil {
 					ctx.JSON(http.StatusOK, resp)
 				}
@@ -348,7 +361,7 @@ func New(logger *zap.Logger, options ...Option) (Engine, error) {
 			}
 			decodedURL, _ := url.QueryUnescape(ctx.Request.URL.RequestURI())
 
-			logger.Debug("core-interceptor",
+			logger.Info("core-interceptor",
 				zap.Any("method", ctx.Request.Method),
 				zap.Any("path", decodedURL),
 				zap.Any("http_code", ctx.Writer.Status()),

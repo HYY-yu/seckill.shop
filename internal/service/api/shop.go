@@ -1,6 +1,7 @@
 package api
 
 import (
+	"go.opentelemetry.io/otel/sdk/trace"
 	"go.uber.org/zap"
 
 	"github.com/HYY-yu/seckill/internal/pkg/cache"
@@ -9,7 +10,9 @@ import (
 	"github.com/HYY-yu/seckill/internal/pkg/metrics"
 	"github.com/HYY-yu/seckill/internal/service/api/router"
 	"github.com/HYY-yu/seckill/internal/service/api/router/middleware"
+	"github.com/HYY-yu/seckill/internal/service/config"
 	"github.com/HYY-yu/seckill/pkg/errors"
+	"github.com/HYY-yu/seckill/pkg/jaeger"
 )
 
 type Server struct {
@@ -17,6 +20,7 @@ type Server struct {
 	Engine  core.Engine
 	DB      db.Repo
 	Cache   cache.Repo
+	Trace   *trace.TracerProvider
 	Middles middleware.Middleware
 }
 
@@ -38,6 +42,13 @@ func NewApiServer(logger *zap.Logger) (*Server, error) {
 		logger.Fatal("new cache err", zap.Error(err))
 	}
 	s.Cache = cacheRepo
+
+	// Jaeger
+	tp, err := jaeger.InitJaeger(config.Get().Server.ServerName, config.Get().Jaeger.UdpEndpoint)
+	if err != nil {
+		logger.Error("jaeger error", zap.Error(err))
+	}
+	s.Trace = tp
 
 	engine, err := core.New(logger,
 		core.WithEnableCors(),
