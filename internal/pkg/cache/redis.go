@@ -4,11 +4,11 @@ import (
 	"context"
 	"time"
 
-	"github.com/go-redis/redis/v7"
-
 	"github.com/HYY-yu/seckill/internal/service/config"
 	"github.com/HYY-yu/seckill/pkg/errors"
 	"github.com/HYY-yu/seckill/pkg/time_parse"
+	"github.com/go-redis/redis/v7"
+	"go.opentelemetry.io/otel"
 )
 
 type Option func(*option)
@@ -77,6 +77,8 @@ func (c *cacheRepo) Set(ctx context.Context, key, value string, ttl time.Duratio
 	opt := newOption()
 	defer func() {
 		if opt.TraceRedis != nil {
+			tr := otel.Tracer(config.Get().Server.ServerName + ".Redis")
+
 			opt.TraceRedis.Timestamp = time_parse.CSTLayoutString()
 			opt.TraceRedis.Handle = "set"
 			opt.TraceRedis.Key = key

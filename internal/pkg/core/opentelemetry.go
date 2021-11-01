@@ -2,19 +2,20 @@ package core
 
 import (
 	"net/http"
-	"net/url"
 	"time"
 
 	"github.com/HYY-yu/seckill/internal/service/config"
 	"github.com/HYY-yu/seckill/pkg/response"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 )
 
 // RecordMetrics 记录prometheus指标用
-type RecordMetrics func(method, uri string, success bool, httpCode, businessCode int, costSeconds float64, traceId string)
+type RecordMetrics func(method, uri string, httpCode, businessCode int, costSeconds float64, traceId string)
 
 // OpenTelemetry
 // logger \ metrics \ trace 三者归一
@@ -33,22 +34,24 @@ func (o *OpenTelemetry) Telemetry(c Context) {
 	logger := c.Logger()
 	ts := time.Now()
 
-	tr := otel.GetTracerProvider().Tracer(config.Get().Server.ServerName + "/HTTPServer")
+	tr := otel.GetTracerProvider().Tracer(config.Get().Server.ServerName + ".HTTP")
 	jCtx := otel.GetTextMapPropagator().Extract(ctx.Request.Context(), propagation.HeaderCarrier(ctx.Request.Header))
-	jCtx, span := tr.Start(jCtx, ctx.Request.URL.String(), trace.WithSpanKind(trace.SpanKindServer))
+	jCtx, span := tr.Start(jCtx, ctx.Request.URL.String(), trace.WithSpanKind(trace.SpanKindServer), trace.WithNewRoot())
 	defer span.End()
 	traceId := span.SpanContext().SpanID().String()
 
 	// 设置到 全局上下文中
 	ctx.Request.WithContext(jCtx)
 
+	// 设置到logger中
+	logger = logger.With(zap.String("trace_id", traceId))
+	c.setLogger(logger)
+
 	ctx.Next()
 
 	if ctx.Writer.Status() == http.StatusNotFound {
 		return
 	}
-
-	// TODO skip url
 
 	// 获取返回信息
 	resp := c.getResponse()
@@ -57,34 +60,60 @@ func (o *OpenTelemetry) Telemetry(c Context) {
 	}
 	jsonResp := resp.(*response.JsonResponse)
 
-	// TODO Jaeger追踪
+	decodedURL := c.URI()
+	telemetry := &RequestTelemetry{
+		Method:       ctx.Request.Method,
+		Path:         decodedURL,
+		HttpCode:     ctx.Writer.Status(),
+		BusinessCode: jsonResp.Code,
+		CostSeconds:  time.Since(ts).Seconds(),
+	}
 
+	//  Jaeger追踪
+	span.SetAttributes(
+		attribute.String("http.method", telemetry.Method),
+		attribute.String("http.path", telemetry.Path),
+		attribute.Int("http.http_code", telemetry.HttpCode),
+		attribute.Int("http.business_code", telemetry.BusinessCode),
+		attribute.Float64("http.cost_seconds", telemetry.CostSeconds),
+	)
+	if !ctx.IsAborted() && ctx.Writer.Status() == http.StatusOK {
+		span.SetStatus(codes.Ok, "")
+	} else {
+		span.SetStatus(codes.Error, jsonResp.Message)
+	}
+
+	// Metrics
 	if o.recordMetrics != nil {
-		uri := c.URI()
-
 		// metrics output
 		o.recordMetrics(
-			c.RequestContext().Request.Method,
-			uri,
-			!ctx.IsAborted() && ctx.Writer.Status() == http.StatusOK,
-			ctx.Writer.Status(),
-			jsonResp.Code,
-			time.Since(ts).Seconds(),
+			telemetry.Method,
+			telemetry.Path,
+			telemetry.HttpCode,
+			telemetry.BusinessCode,
+			telemetry.CostSeconds,
 			traceId,
 		)
 	}
 	if c.getDisableLog() {
 		return
 	}
-	decodedURL, _ := url.QueryUnescape(ctx.Request.URL.RequestURI())
 
 	// logger output
 	logger.Info("core-interceptor",
-		zap.Any("method", ctx.Request.Method),
-		zap.Any("path", decodedURL),
-		zap.Any("http_code", ctx.Writer.Status()),
-		zap.Any("business_code", jsonResp.Code),
-		zap.Any("success", !ctx.IsAborted() && ctx.Writer.Status() == http.StatusOK),
-		zap.Any("cost_seconds", time.Since(ts).Seconds()),
+		zap.Any("method", telemetry.Method),
+		zap.Any("path", telemetry.Path),
+		zap.Any("http_code", telemetry.HttpCode),
+		zap.Any("business_code", telemetry.BusinessCode),
+		zap.Any("cost_seconds", telemetry.CostSeconds),
+		zap.Any("trace_id", traceId),
 	)
+}
+
+type RequestTelemetry struct {
+	Method       string  `json:"method"`
+	Path         string  `json:"path"`
+	HttpCode     int     `json:"http_code"`
+	BusinessCode int     `json:"business_code"`
+	CostSeconds  float64 `json:"cost_seconds"`
 }
