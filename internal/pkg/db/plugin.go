@@ -1,79 +1,161 @@
 package db
 
 import (
-	"time"
+	"fmt"
 
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
+	"go.opentelemetry.io/otel/trace"
 	"gorm.io/gorm"
-	"gorm.io/gorm/utils"
 
-	"github.com/HYY-yu/seckill/pkg/time_parse"
+	"github.com/HYY-yu/seckill/internal/service/config"
 )
 
-const (
-	callBackBeforeName = "core:before"
-	callBackAfterName  = "core:after"
-	startTime          = "_start_time"
-)
+var dbRowsAffected = attribute.Key("db.rows_affected")
 
-type TracePlugin struct{}
+type Option func(p *otelPlugin)
 
-func (op *TracePlugin) Name() string {
-	return "tracePlugin"
+// WithTracerProvider configures a tracer provider that is used to create a tracer.
+func WithTracerProvider(provider trace.TracerProvider) Option {
+	return func(p *otelPlugin) {
+		p.provider = provider
+	}
 }
 
-func (op *TracePlugin) Initialize(db *gorm.DB) (err error) {
-	// 开始前
-	_ = db.Callback().Create().Before("gorm:before_create").Register(callBackBeforeName, before)
-	_ = db.Callback().Query().Before("gorm:query").Register(callBackBeforeName, before)
-	_ = db.Callback().Delete().Before("gorm:before_delete").Register(callBackBeforeName, before)
-	_ = db.Callback().Update().Before("gorm:setup_reflect_value").Register(callBackBeforeName, before)
-	_ = db.Callback().Row().Before("gorm:row").Register(callBackBeforeName, before)
-	_ = db.Callback().Raw().Before("gorm:raw").Register(callBackBeforeName, before)
-
-	// 结束后
-	_ = db.Callback().Create().After("gorm:after_create").Register(callBackAfterName, after)
-	_ = db.Callback().Query().After("gorm:after_query").Register(callBackAfterName, after)
-	_ = db.Callback().Delete().After("gorm:after_delete").Register(callBackAfterName, after)
-	_ = db.Callback().Update().After("gorm:after_update").Register(callBackAfterName, after)
-	_ = db.Callback().Row().After("gorm:row").Register(callBackAfterName, after)
-	_ = db.Callback().Raw().After("gorm:raw").Register(callBackAfterName, after)
-	return
+// WithAttributes configures attributes that are used to create a span.
+func WithAttributes(attrs ...attribute.KeyValue) Option {
+	return func(p *otelPlugin) {
+		p.attrs = append(p.attrs, attrs...)
+	}
 }
 
-var _ gorm.Plugin = &TracePlugin{}
-
-func before(db *gorm.DB) {
-	db.InstanceSet(startTime, time.Now())
-	return
+// WithDBName configures a db.name attribute.
+func WithDBName(name string) Option {
+	return func(p *otelPlugin) {
+		p.attrs = append(p.attrs, semconv.DBNameKey.String(name))
+	}
 }
 
-func after(db *gorm.DB) {
-	_ts, isExist := db.InstanceGet(startTime)
-	if !isExist {
-		return
+type otelPlugin struct {
+	provider trace.TracerProvider
+	tracer   trace.Tracer
+	attrs    []attribute.KeyValue
+}
+
+func NewPlugin(opts ...Option) gorm.Plugin {
+	p := &otelPlugin{}
+	for _, opt := range opts {
+		opt(p)
 	}
 
-	ts, ok := _ts.(time.Time)
-	if !ok {
-		return
+	if p.provider == nil {
+		p.provider = otel.GetTracerProvider()
 	}
+	p.tracer = p.provider.Tracer(config.Get().Server.ServerName + ".DB")
 
-	sql := db.Dialector.Explain(db.Statement.SQL.String(), db.Statement.Vars...)
-
-	sqlInfo := new(SQL)
-	sqlInfo.Timestamp = time_parse.CSTLayoutString()
-	sqlInfo.SQL = sql
-	sqlInfo.Stack = utils.FileWithLineNum()
-	sqlInfo.Rows = db.Statement.RowsAffected
-	sqlInfo.CostSeconds = time.Since(ts).Seconds()
-
-	return
+	return p
 }
 
-type SQL struct {
-	Timestamp   string  `json:"timestamp"`     // 时间，格式：2006-01-02 15:04:05
-	Stack       string  `json:"stack"`         // 文件地址和行号
-	SQL         string  `json:"sql"`           // SQL 语句
-	Rows        int64   `json:"rows_affected"` // 影响行数
-	CostSeconds float64 `json:"cost_seconds"`  // 执行时长(单位秒)
+func (p otelPlugin) Name() string {
+	return "otelgorm"
+}
+
+type gormHookFunc func(tx *gorm.DB)
+
+type gormRegister interface {
+	Register(name string, fn func(*gorm.DB)) error
+}
+
+func (p otelPlugin) Initialize(db *gorm.DB) (err error) {
+	cb := db.Callback()
+	hooks := []struct {
+		callback gormRegister
+		hook     gormHookFunc
+		name     string
+	}{
+		{cb.Create().Before("gorm:create"), p.before("gorm.Create"), "before:create"},
+		{cb.Create().After("gorm:create"), p.after(), "after:create"},
+
+		{cb.Query().Before("gorm:query"), p.before("gorm.Query"), "before:select"},
+		{cb.Query().After("gorm:query"), p.after(), "after:select"},
+
+		{cb.Delete().Before("gorm:delete"), p.before("gorm.Delete"), "before:delete"},
+		{cb.Delete().After("gorm:delete"), p.after(), "after:delete"},
+
+		{cb.Update().Before("gorm:update"), p.before("gorm.Update"), "before:update"},
+		{cb.Update().After("gorm:update"), p.after(), "after:update"},
+
+		{cb.Row().Before("gorm:row"), p.before("gorm.Row"), "before:row"},
+		{cb.Row().After("gorm:row"), p.after(), "after:row"},
+
+		{cb.Raw().Before("gorm:raw"), p.before("gorm.Raw"), "before:raw"},
+		{cb.Raw().After("gorm:raw"), p.after(), "after:raw"},
+	}
+
+	var firstErr error
+
+	for _, h := range hooks {
+		if err := h.callback.Register("otel:"+h.name, h.hook); err != nil && firstErr == nil {
+			firstErr = fmt.Errorf("callback register %s failed: %w", h.name, err)
+		}
+	}
+
+	return firstErr
+}
+
+func (p *otelPlugin) before(spanName string) gormHookFunc {
+	return func(tx *gorm.DB) {
+		tx.Statement.Context, _ = p.tracer.Start(tx.Statement.Context, spanName)
+	}
+}
+
+func (p *otelPlugin) after() gormHookFunc {
+	return func(tx *gorm.DB) {
+		span := trace.SpanFromContext(tx.Statement.Context)
+		if !span.IsRecording() {
+			return
+		}
+		defer span.End()
+
+		attrs := make([]attribute.KeyValue, 0, len(p.attrs)+4)
+		attrs = append(attrs, p.attrs...)
+
+		if sys := dbSystem(tx); sys.Valid() {
+			attrs = append(attrs, sys)
+		}
+		query := tx.Dialector.Explain(tx.Statement.SQL.String(), tx.Statement.Vars...)
+		attrs = append(attrs, semconv.DBStatementKey.String(query))
+
+		if tx.Statement.Table != "" {
+			attrs = append(attrs, semconv.DBSQLTableKey.String(tx.Statement.Table))
+		}
+		if tx.Statement.RowsAffected != -1 {
+			attrs = append(attrs, dbRowsAffected.Int64(tx.Statement.RowsAffected))
+		}
+
+		span.SetAttributes(attrs...)
+		if tx.Error != nil {
+			span.RecordError(tx.Error)
+			span.SetStatus(codes.Error, tx.Error.Error())
+		}
+	}
+}
+
+func dbSystem(tx *gorm.DB) attribute.KeyValue {
+	switch tx.Dialector.Name() {
+	case "mysql":
+		return semconv.DBSystemMySQL
+	case "postgres", "postgresql":
+		return semconv.DBSystemPostgreSQL
+	case "sqlite":
+		return semconv.DBSystemSqlite
+	case "sqlserver":
+		return semconv.DBSystemKey.String("sqlserver")
+	case "clickhouse":
+		return semconv.DBSystemKey.String("clickhouse")
+	default:
+		return attribute.KeyValue{}
+	}
 }

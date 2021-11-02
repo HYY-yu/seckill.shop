@@ -3,7 +3,7 @@ package token
 import (
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt"
 )
 
 func (t *token) JwtSign(userId int64, userName string, expireDuration time.Duration) (tokenString string, err error) {
