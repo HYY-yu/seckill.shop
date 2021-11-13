@@ -267,7 +267,6 @@ func New(logger *zap.Logger, options ...Option) (Engine, error) {
 		defer releaseContext(c)
 
 		// 注入Logger到Ctx
-		c.init()
 		c.setLogger(logger)
 
 		defer func() {

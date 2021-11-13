@@ -16,14 +16,14 @@ import (
 )
 
 type Controllers struct {
-	shopController *controller.ShopController
+	goodsController *controller.GoodsController
 }
 
 func NewControllers(
-	shopCtl *controller.ShopController,
+	goodsController *controller.GoodsController,
 ) *Controllers {
 	return &Controllers{
-		shopController: shopCtl,
+		goodsController: goodsController,
 	}
 }
 

@@ -46,8 +46,6 @@ var _ Context = (*context)(nil)
 
 // Context 封装 gin.Context
 type Context interface {
-	init()
-
 	// ShouldBindForm 同时反序列化 querystring 和 postform;
 	// 当 querystring 和 postform 存在相同字段时，postform 优先使用。
 	// tag: `form:"xxx"`
@@ -110,9 +108,6 @@ type Context interface {
 type context struct {
 	ctx    *gin.Context
 	logger *zap.Logger
-}
-
-func (c *context) init() {
 }
 
 // ShouldBindForm 同时反序列化querystring和postform;

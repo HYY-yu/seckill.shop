@@ -5,13 +5,13 @@ import (
 	"go.uber.org/zap"
 )
 
-type ShopRepo struct {
+type GoodsRepo struct {
 	Logger *zap.Logger
 	DB     db.Repo
 }
 
-func NewShopRepo(logger *zap.Logger, db db.Repo) *ShopRepo {
-	return &ShopRepo{
+func NewGoodsRepo(logger *zap.Logger, db db.Repo) *GoodsRepo {
+	return &GoodsRepo{
 		Logger: logger,
 		DB:     db,
 	}

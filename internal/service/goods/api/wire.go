@@ -16,5 +16,5 @@ import (
 
 // initControllers init Controllers.
 func initControllers(l *zap.Logger, d db.Repo, c cache.Repo) (*Controllers, error) {
-	panic(wire.Build(repo.NewShopRepo, svc.NewShopSvc, controller.NewShopController, NewControllers))
+	panic(wire.Build(repo.NewGoodsRepo, svc.NewGoodsSvc, controller.NewGoodsController, NewControllers))
 }
