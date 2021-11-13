@@ -1,6 +1,8 @@
 package api
 
 import (
+	"github.com/HYY-yu/seckill/internal/service/api/controller"
+	"github.com/HYY-yu/seckill/internal/service/api/middleware"
 	"go.opentelemetry.io/otel/sdk/trace"
 	"go.uber.org/zap"
 
@@ -8,12 +10,22 @@ import (
 	"github.com/HYY-yu/seckill/internal/pkg/core"
 	"github.com/HYY-yu/seckill/internal/pkg/db"
 	"github.com/HYY-yu/seckill/internal/pkg/metrics"
-	"github.com/HYY-yu/seckill/internal/service/api/router"
-	"github.com/HYY-yu/seckill/internal/service/api/router/middleware"
 	"github.com/HYY-yu/seckill/internal/service/config"
 	"github.com/HYY-yu/seckill/pkg/errors"
 	"github.com/HYY-yu/seckill/pkg/jaeger"
 )
+
+type Controllers struct {
+	shopController *controller.ShopController
+}
+
+func NewControllers(
+	shopCtl *controller.ShopController,
+) *Controllers {
+	return &Controllers{
+		shopController: shopCtl,
+	}
+}
 
 type Server struct {
 	Logger  *zap.Logger
@@ -64,6 +76,12 @@ func NewApiServer(logger *zap.Logger) (*Server, error) {
 
 	s.Middles = middleware.New(logger)
 
-	router.SetRouter(s.Engine)
+	// Init Repo Svc Controller
+	c, err := initControllers(logger, s.DB, s.Cache)
+	if err != nil {
+		panic(err)
+	}
+
+	s.Route(c)
 	return s, nil
 }
