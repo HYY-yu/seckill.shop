@@ -53,10 +53,10 @@ type Config struct {
 	} `toml:"jaeger"`
 }
 
-func init() {
+func InitConfig() {
 	viper.SetConfigName("cfg")
 	viper.SetConfigType("toml")
-	viper.AddConfigPath("./cfg")
+	viper.AddConfigPath("../config")
 
 	if err := viper.ReadInConfig(); err != nil {
 		panic(err)

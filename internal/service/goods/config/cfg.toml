@@ -21,12 +21,12 @@ pass = "redis"
 poolSize = 10
 
 [log]
-logPath = "./seckill-shop.log"
+logPath = "./seckill-shop-goods.log"
 level = "debug" # DEBUG INFO WARN ERROR
 stdout = true
 
 [server]
-serverName = "seckill-shop"
+serverName = "seckill-shop-goods"
 host = ":8081"
 pprof = false
 

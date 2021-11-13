@@ -3,7 +3,7 @@ package svc
 import (
 	"github.com/HYY-yu/seckill/internal/pkg/cache"
 	"github.com/HYY-yu/seckill/internal/pkg/db"
-	"github.com/HYY-yu/seckill/internal/service/api/repo"
+	"github.com/HYY-yu/seckill/internal/service/goods/api/repo"
 	"go.uber.org/zap"
 )
 

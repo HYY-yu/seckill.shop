@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/HYY-yu/seckill/internal/pkg/core"
-	"github.com/HYY-yu/seckill/internal/service/config"
+	"github.com/HYY-yu/seckill/internal/service/goods/config"
 	"github.com/HYY-yu/seckill/pkg/response"
 	"github.com/HYY-yu/seckill/pkg/token"
 )

@@ -1,8 +1,9 @@
 package api
 
 import (
-	"github.com/HYY-yu/seckill/internal/service/api/controller"
-	"github.com/HYY-yu/seckill/internal/service/api/middleware"
+	"github.com/HYY-yu/seckill/internal/pkg/middleware"
+	"github.com/HYY-yu/seckill/internal/service/goods/api/controller"
+	"github.com/HYY-yu/seckill/internal/service/goods/config"
 	"go.opentelemetry.io/otel/sdk/trace"
 	"go.uber.org/zap"
 
@@ -10,7 +11,6 @@ import (
 	"github.com/HYY-yu/seckill/internal/pkg/core"
 	"github.com/HYY-yu/seckill/internal/pkg/db"
 	"github.com/HYY-yu/seckill/internal/pkg/metrics"
-	"github.com/HYY-yu/seckill/internal/service/config"
 	"github.com/HYY-yu/seckill/pkg/errors"
 	"github.com/HYY-yu/seckill/pkg/jaeger"
 )

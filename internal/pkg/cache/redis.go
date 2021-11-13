@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
+	"github.com/HYY-yu/seckill/internal/service/goods/config"
 	"github.com/go-redis/redis/v8"
 
-	"github.com/HYY-yu/seckill/internal/service/config"
 	"github.com/HYY-yu/seckill/pkg/errors"
 	"github.com/HYY-yu/seckill/pkg/time_parse"
 )

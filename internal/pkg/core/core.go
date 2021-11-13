@@ -7,6 +7,7 @@ import (
 	"runtime/debug"
 	"time"
 
+	"github.com/HYY-yu/seckill/internal/service/goods/config"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -16,7 +17,6 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/time/rate"
 
-	"github.com/HYY-yu/seckill/internal/service/config"
 	"github.com/HYY-yu/seckill/pkg/response"
 )
 

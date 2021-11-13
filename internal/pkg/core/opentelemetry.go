@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/HYY-yu/seckill/internal/service/config"
+	"github.com/HYY-yu/seckill/internal/service/goods/config"
 	"github.com/HYY-yu/seckill/pkg/response"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"

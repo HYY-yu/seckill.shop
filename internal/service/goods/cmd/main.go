@@ -2,17 +2,19 @@ package main
 
 import (
 	"context"
-	"go.uber.org/zap"
 	"net/http"
 	"time"
 
-	"github.com/HYY-yu/seckill/internal/service/api"
-	"github.com/HYY-yu/seckill/internal/service/config"
+	"github.com/HYY-yu/seckill/internal/service/goods/api"
+	"github.com/HYY-yu/seckill/internal/service/goods/config"
+	"go.uber.org/zap"
+
 	"github.com/HYY-yu/seckill/pkg/logger"
 	"github.com/HYY-yu/seckill/pkg/shutdown"
 )
 
 func main() {
+	config.InitConfig()
 	lp := findLogConfigOption()
 
 	l, err := logger.NewJSONLogger(lp...)

@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/HYY-yu/seckill/internal/service/goods/config"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 
-	"github.com/HYY-yu/seckill/internal/service/config"
 	"github.com/HYY-yu/seckill/pkg/errors"
 )
 

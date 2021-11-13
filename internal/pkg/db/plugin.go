@@ -3,14 +3,13 @@ package db
 import (
 	"fmt"
 
+	"github.com/HYY-yu/seckill/internal/service/goods/config"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 	"go.opentelemetry.io/otel/trace"
 	"gorm.io/gorm"
-
-	"github.com/HYY-yu/seckill/internal/service/config"
 )
 
 var dbRowsAffected = attribute.Key("db.rows_affected")

@@ -2,7 +2,7 @@ package controller
 
 import (
 	"github.com/HYY-yu/seckill/internal/pkg/core"
-	"github.com/HYY-yu/seckill/internal/service/api/svc"
+	"github.com/HYY-yu/seckill/internal/service/goods/api/svc"
 )
 
 type ShopController struct {
