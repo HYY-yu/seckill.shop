@@ -1,9 +1,14 @@
 package svc
 
 import (
+	"errors"
+
 	"github.com/HYY-yu/seckill/internal/pkg/cache"
 	"github.com/HYY-yu/seckill/internal/pkg/db"
 	"github.com/HYY-yu/seckill/internal/service/goods/api/repo"
+	"github.com/HYY-yu/seckill/pkg/page"
+	"github.com/HYY-yu/seckill/pkg/response"
+	"github.com/HYY-yu/seckill/pkg/werror"
 	"go.uber.org/zap"
 )
 
@@ -24,6 +29,7 @@ func NewGoodsSvc(logger *zap.Logger, db db.Repo, ca cache.Repo, goodsRepo *repo.
 	}
 }
 
-func (s *GoodsSvc) List() {
-
+func (s *GoodsSvc) List(pr *page.PageRequest) error {
+	return response.NewErrorWithStatusOkAutoMsg(response.ServerError).
+		WithErr(werror.WithStack(errors.New("haha error")))
 }

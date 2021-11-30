@@ -323,7 +323,13 @@ func New(logger *zap.Logger, options ...Option) (Engine, error) {
 	}
 
 	// 注册全局 Telemetry
-	mux.Group("").Use(NewOpenTelemetry(opt.recordMetrics).Telemetry)
+	openTelemetry := NewOpenTelemetry(opt.recordMetrics)
+	mux.baseGroup.Use(func(c *gin.Context) {
+		ctx := newContext(c)
+		defer releaseContext(ctx)
+
+		openTelemetry.Telemetry(ctx)
+	})
 
 	return mux, nil
 }

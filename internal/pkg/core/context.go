@@ -18,6 +18,7 @@ type HandlerFunc func(c Context)
 
 // 内存缓存
 const (
+	_Logger     = "_logger_"
 	_Response   = "_response_"
 	_UserID     = "_user_id_"
 	_UserName   = "_user_name_"
@@ -106,8 +107,7 @@ type Context interface {
 }
 
 type context struct {
-	ctx    *gin.Context
-	logger *zap.Logger
+	ctx *gin.Context
 }
 
 // ShouldBindForm 同时反序列化querystring和postform;
@@ -135,11 +135,15 @@ func (c *context) Redirect(code int, location string) {
 }
 
 func (c *context) Logger() *zap.Logger {
-	return c.logger
+	logger, ok := c.ctx.Get(_Logger)
+	if !ok {
+		return nil
+	}
+	return logger.(*zap.Logger)
 }
 
 func (c *context) setLogger(logger *zap.Logger) {
-	c.logger = logger
+	c.ctx.Set(_Logger, logger)
 }
 
 func (c *context) Payload(payload interface{}) {
@@ -167,6 +171,10 @@ func (c *context) AbortWithError(err error) {
 			errResp = v
 		} else {
 			errResp.WithErr(err)
+		}
+
+		if errResp.GetErr() != nil {
+			c.Logger().Error("server error ...", zap.Error(errResp.GetErr()))
 		}
 
 		httpCode := errResp.GetHttpCode()

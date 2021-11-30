@@ -10,7 +10,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 
-	"github.com/HYY-yu/seckill/pkg/errors"
+	"github.com/HYY-yu/seckill/pkg/werror"
 )
 
 var _ Repo = (*dbRepo)(nil)
@@ -67,7 +67,7 @@ func dbConnect(user, pass, addr, dbName string) (*gorm.DB, error) {
 	})
 
 	if err != nil {
-		return nil, errors.Wrap(err, fmt.Sprintf("[db connection failed] Database name: %s", dbName))
+		return nil, werror.Wrap(err, fmt.Sprintf("[db connection failed] Database name: %s", dbName))
 	}
 	db.Set("gorm:table_options", "CHARSET=utf8mb4")
 

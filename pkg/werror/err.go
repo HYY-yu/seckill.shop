@@ -1,4 +1,4 @@
-package errors
+package werror
 
 import (
 	"fmt"
@@ -37,10 +37,15 @@ func (i *item) t() {}
 // Format used by go.uber.org/zap in Verbose
 func (i *item) Format(s fmt.State, verb rune) {
 	io.WriteString(s, i.msg)
-	io.WriteString(s, "\n")
+	io.WriteString(s, " \n ")
 
-	for _, pc := range i.stack {
-		fmt.Fprintf(s, "%+v\n", errors.Frame(pc))
+	for i, pc := range i.stack {
+		frameText, _ := errors.Frame(pc).MarshalText()
+		fmt.Fprintf(s, "[%s] --> ", frameText)
+		if i > 7 {
+			// 7层一般已经够了吧
+			break
+		}
 	}
 }
 

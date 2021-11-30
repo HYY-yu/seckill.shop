@@ -2,7 +2,7 @@ package encrypt
 
 import (
 	"fmt"
-	"git.daddylab.com/DaddyLab/DaddyLab.MS.Common/log"
+	"log"
 	"testing"
 )
 

@@ -2,7 +2,6 @@ package response
 
 import (
 	"encoding/json"
-	"github.com/pkg/errors"
 	"net/http"
 )
 
@@ -69,7 +68,7 @@ func (e *err) Error() string {
 }
 
 func (e *err) WithErr(err error) Error {
-	e.Err = errors.WithStack(err)
+	e.Err = err
 	return e
 }
 

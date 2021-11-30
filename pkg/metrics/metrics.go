@@ -29,7 +29,7 @@ func InitMetrics(namespace string, subsystem string) {
 			Name:      "requests_cost",
 			Help:      "request(ms) cost milliseconds",
 		},
-		[]string{"method", "path", "success", "http_code", "business_code", "cost_milliseconds", "trace_id"},
+		[]string{"method", "path", "http_code", "business_code", "cost_milliseconds", "trace_id"},
 	)
 
 	prometheus.MustRegister(metricsRequestsTotal, metricsRequestsCost)

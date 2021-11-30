@@ -97,11 +97,11 @@ func findLogConfigOption() []logger.Option {
 	case "DEBUG":
 		result = append(result, logger.WithDebugLevel())
 	case "INFO":
-		result = append(result, logger.WithDebugLevel())
+		result = append(result, logger.WithInfoLevel())
 	case "WARN":
-		result = append(result, logger.WithDebugLevel())
+		result = append(result, logger.WithWarnLevel())
 	case "ERROR":
-		result = append(result, logger.WithDebugLevel())
+		result = append(result, logger.WithErrorLevel())
 	}
 
 	result = append(result, logger.WithFileRotationP(C.Log.LogPath))

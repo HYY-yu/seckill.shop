@@ -4,15 +4,15 @@ import (
 	"github.com/HYY-yu/seckill/internal/pkg/middleware"
 	"github.com/HYY-yu/seckill/internal/service/goods/api/controller"
 	"github.com/HYY-yu/seckill/internal/service/goods/config"
+	"github.com/HYY-yu/seckill/pkg/metrics"
 	"go.opentelemetry.io/otel/sdk/trace"
 	"go.uber.org/zap"
 
 	"github.com/HYY-yu/seckill/internal/pkg/cache"
 	"github.com/HYY-yu/seckill/internal/pkg/core"
 	"github.com/HYY-yu/seckill/internal/pkg/db"
-	"github.com/HYY-yu/seckill/internal/pkg/metrics"
-	"github.com/HYY-yu/seckill/pkg/errors"
 	"github.com/HYY-yu/seckill/pkg/jaeger"
+	"github.com/HYY-yu/seckill/pkg/werror"
 )
 
 type Controllers struct {
@@ -38,7 +38,7 @@ type Server struct {
 
 func NewApiServer(logger *zap.Logger) (*Server, error) {
 	if logger == nil {
-		return nil, errors.New("logger required")
+		return nil, werror.New("logger required")
 	}
 	s := &Server{}
 	s.Logger = logger
@@ -56,7 +56,7 @@ func NewApiServer(logger *zap.Logger) (*Server, error) {
 	s.Cache = cacheRepo
 
 	// Jaeger
-	tp, err := jaeger.InitStdOutForDevelopment(config.Get().Server.ServerName, config.Get().Jaeger.UdpEndpoint)
+	tp, err := jaeger.InitJaeger(config.Get().Server.ServerName, config.Get().Jaeger.UdpEndpoint)
 	if err != nil {
 		logger.Error("jaeger error", zap.Error(err))
 	}

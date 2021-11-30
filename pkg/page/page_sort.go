@@ -3,10 +3,11 @@ package page
 import (
 	"encoding/json"
 	"errors"
-	"github.com/spf13/cast"
-	"github.com/tidwall/gjson"
 	"net/url"
 	"strings"
+
+	"github.com/spf13/cast"
+	"github.com/tidwall/gjson"
 )
 
 // 分页 排序 帮助函数
@@ -30,11 +31,11 @@ func NewPage(count int, list interface{}) *Page {
 
 // PageRequest 分页加筛选
 type PageRequest struct {
-	PageIndex   int                    `json:"page_index"`
-	PageSize    int                    `json:"page_size"`
-	SortBy      string                 `json:"sort"`
-	Filter      map[string]interface{} `json:"filter"`
-	AllowFields []string               `json:"-"`
+	PageIndex   int                    `form:"page_index" json:"page_index"`
+	PageSize    int                    `form:"page_size" json:"page_size"`
+	SortBy      string                 `form:"sort" json:"sort"`
+	Filter      map[string]interface{} `form:"filter" json:"filter"`
+	AllowFields []string               `form:"-" json:"-"`
 }
 
 func NewPageRequest(pi, ps int, sort string, filter map[string]interface{}) *PageRequest {
