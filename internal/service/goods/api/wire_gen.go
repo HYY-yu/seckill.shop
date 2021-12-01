@@ -11,15 +11,14 @@ import (
 	"github.com/HYY-yu/seckill/internal/service/goods/api/controller"
 	"github.com/HYY-yu/seckill/internal/service/goods/api/repo"
 	"github.com/HYY-yu/seckill/internal/service/goods/api/svc"
-	"go.uber.org/zap"
 )
 
 // Injectors from wire.go:
 
 // initControllers init Controllers.
-func initControllers(l *zap.Logger, d db.Repo, c cache.Repo) (*Controllers, error) {
-	goodsRepo := repo.NewGoodsRepo(l, d)
-	goodsSvc := svc.NewGoodsSvc(l, d, c, goodsRepo)
+func initControllers(d db.Repo, c cache.Repo) (*Controllers, error) {
+	goodsRepo := repo.NewGoodsRepo()
+	goodsSvc := svc.NewGoodsSvc(d, c, goodsRepo)
 	goodsController := controller.NewGoodsController(goodsSvc)
 	controllers := NewControllers(goodsController)
 	return controllers, nil

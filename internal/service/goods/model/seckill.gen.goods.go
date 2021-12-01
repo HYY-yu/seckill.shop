@@ -3,6 +3,7 @@ package model
 import (
 	"context"
 	"fmt"
+
 	"gorm.io/gorm"
 )
 
@@ -53,6 +54,31 @@ func (obj *_GoodsMgr) Count(count *int64) (tx *gorm.DB) {
 
 //////////////////////////option case ////////////////////////////////////////////
 
+// WithID id获取
+func (obj *_GoodsMgr) WithID(id int) Option {
+	return optionFunc(func(o *options) { o.query["id"] = id })
+}
+
+// WithName name获取
+func (obj *_GoodsMgr) WithName(name string) Option {
+	return optionFunc(func(o *options) { o.query["name"] = name })
+}
+
+// WithDesc desc获取
+func (obj *_GoodsMgr) WithDesc(desc string) Option {
+	return optionFunc(func(o *options) { o.query["desc"] = desc })
+}
+
+// WithCount count获取
+func (obj *_GoodsMgr) WithCount(count int) Option {
+	return optionFunc(func(o *options) { o.query["count"] = count })
+}
+
+// WithCreateTime create_time获取
+func (obj *_GoodsMgr) WithCreateTime(createTime int) Option {
+	return optionFunc(func(o *options) { o.query["create_time"] = createTime })
+}
+
 // GetByOption 功能选项模式获取
 func (obj *_GoodsMgr) GetByOption(opts ...Option) (result Goods, err error) {
 	options := options{
@@ -83,4 +109,81 @@ func (obj *_GoodsMgr) GetByOptions(opts ...Option) (results []*Goods, err error)
 
 //////////////////////////enume case ////////////////////////////////////////////
 
+// GetFromID 通过id获取内容
+func (obj *_GoodsMgr) GetFromID(id int) (result Goods, err error) {
+	err = obj.DB.WithContext(obj.ctx).Model(Goods{}).Where("`id` = ?", id).Find(&result).Error
+
+	return
+}
+
+// GetBatchFromID 批量查找
+func (obj *_GoodsMgr) GetBatchFromID(ids []int) (results []*Goods, err error) {
+	err = obj.DB.WithContext(obj.ctx).Model(Goods{}).Where("`id` IN (?)", ids).Find(&results).Error
+
+	return
+}
+
+// GetFromName 通过name获取内容
+func (obj *_GoodsMgr) GetFromName(name string) (results []*Goods, err error) {
+	err = obj.DB.WithContext(obj.ctx).Model(Goods{}).Where("`name` = ?", name).Find(&results).Error
+
+	return
+}
+
+// GetBatchFromName 批量查找
+func (obj *_GoodsMgr) GetBatchFromName(names []string) (results []*Goods, err error) {
+	err = obj.DB.WithContext(obj.ctx).Model(Goods{}).Where("`name` IN (?)", names).Find(&results).Error
+
+	return
+}
+
+// GetFromDesc 通过desc获取内容
+func (obj *_GoodsMgr) GetFromDesc(desc string) (results []*Goods, err error) {
+	err = obj.DB.WithContext(obj.ctx).Model(Goods{}).Where("`desc` = ?", desc).Find(&results).Error
+
+	return
+}
+
+// GetBatchFromDesc 批量查找
+func (obj *_GoodsMgr) GetBatchFromDesc(descs []string) (results []*Goods, err error) {
+	err = obj.DB.WithContext(obj.ctx).Model(Goods{}).Where("`desc` IN (?)", descs).Find(&results).Error
+
+	return
+}
+
+// GetFromCount 通过count获取内容
+func (obj *_GoodsMgr) GetFromCount(count int) (results []*Goods, err error) {
+	err = obj.DB.WithContext(obj.ctx).Model(Goods{}).Where("`count` = ?", count).Find(&results).Error
+
+	return
+}
+
+// GetBatchFromCount 批量查找
+func (obj *_GoodsMgr) GetBatchFromCount(counts []int) (results []*Goods, err error) {
+	err = obj.DB.WithContext(obj.ctx).Model(Goods{}).Where("`count` IN (?)", counts).Find(&results).Error
+
+	return
+}
+
+// GetFromCreateTime 通过create_time获取内容
+func (obj *_GoodsMgr) GetFromCreateTime(createTime int) (results []*Goods, err error) {
+	err = obj.DB.WithContext(obj.ctx).Model(Goods{}).Where("`create_time` = ?", createTime).Find(&results).Error
+
+	return
+}
+
+// GetBatchFromCreateTime 批量查找
+func (obj *_GoodsMgr) GetBatchFromCreateTime(createTimes []int) (results []*Goods, err error) {
+	err = obj.DB.WithContext(obj.ctx).Model(Goods{}).Where("`create_time` IN (?)", createTimes).Find(&results).Error
+
+	return
+}
+
 //////////////////////////primary index case ////////////////////////////////////////////
+
+// FetchByPrimaryKey primary or index 获取唯一内容
+func (obj *_GoodsMgr) FetchByPrimaryKey(id int) (result Goods, err error) {
+	err = obj.DB.WithContext(obj.ctx).Model(Goods{}).Where("`id` = ?", id).Find(&result).Error
+
+	return
+}

@@ -65,10 +65,14 @@ func NewApiServer(logger *zap.Logger) (*Server, error) {
 	// Metrics
 	metrics.InitMetrics(config.Get().Server.ServerName, "api")
 
-	engine, err := core.New(logger,
-		core.WithEnableCors(),
-		core.WithRecordMetrics(metrics.RecordMetrics),
-	)
+	opts := make([]core.Option, 0)
+	opts = append(opts, core.WithEnableCors())
+	opts = append(opts, core.WithRecordMetrics(metrics.RecordMetrics))
+	if !config.Get().Server.Pprof {
+		opts = append(opts, core.WithDisablePProf())
+	}
+
+	engine, err := core.New(logger, opts...)
 	if err != nil {
 		panic(err)
 	}
@@ -77,7 +81,7 @@ func NewApiServer(logger *zap.Logger) (*Server, error) {
 	s.Middles = middleware.New(logger)
 
 	// Init Repo Svc Controller
-	c, err := initControllers(logger, s.DB, s.Cache)
+	c, err := initControllers(s.DB, s.Cache)
 	if err != nil {
 		panic(err)
 	}

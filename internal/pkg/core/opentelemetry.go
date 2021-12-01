@@ -40,7 +40,7 @@ func (o *OpenTelemetry) Telemetry(c Context) {
 	defer span.End()
 	traceId := span.SpanContext().SpanID().String()
 
-	// 设置到 全局上下文中
+	// 设置到 请求上下文 中
 	ctx.Request.WithContext(jCtx)
 
 	// 设置到logger中

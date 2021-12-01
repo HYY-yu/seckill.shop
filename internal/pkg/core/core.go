@@ -273,10 +273,6 @@ func New(logger *zap.Logger, options ...Option) (Engine, error) {
 			if err := recover(); err != nil {
 				stackInfo := string(debug.Stack())
 				logger.Error("got panic", zap.String("panic", fmt.Sprintf("%+v", err)), zap.String("stack", stackInfo))
-				c.AbortWithError(response.NewErrorAutoMsg(
-					http.StatusInternalServerError,
-					response.ServerError,
-				))
 
 				if notify := opt.panicNotify; notify != nil {
 					notify(c, err, stackInfo)

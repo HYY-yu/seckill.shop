@@ -28,7 +28,7 @@ func (s *GoodsController) List(c core.Context) {
 			response.ParamBindError,
 		).WithErr(err))
 	}
-
-	err = s.goodsSvc.List(&pageRequest)
+	data, err := s.goodsSvc.List(c.SvcContext(), &pageRequest)
 	c.AbortWithError(err)
+	c.Payload(data)
 }

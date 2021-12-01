@@ -2,6 +2,7 @@ package core
 
 import (
 	"bytes"
+	stdContext "context"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
+	"github.com/spf13/cast"
 	"go.uber.org/zap"
 
 	"github.com/HYY-yu/seckill/pkg/response"
@@ -102,6 +104,8 @@ type Context interface {
 
 	// RequestContext 获取GIN的 context
 	RequestContext() *gin.Context
+	// SvcContext 给下层用的context
+	SvcContext() SvcContext
 	// URI unescape后的uri
 	URI() string
 }
@@ -260,6 +264,49 @@ func (c *context) RequestData() []byte {
 // RequestContext 获取GIN的Context
 func (c *context) RequestContext() *gin.Context {
 	return c.ctx
+}
+
+// SvcContext 传给下层用的Context，精简去掉Request、Response等信息
+// 只保留以下信息
+type SvcContext interface {
+	UserId() int64
+	UserName() string
+	Context() stdContext.Context
+	Logger() *zap.Logger
+}
+
+type svcContext struct {
+	ctx    stdContext.Context
+	logger *zap.Logger
+}
+
+func (s *svcContext) UserId() int64 {
+	return cast.ToInt64(s.ctx.Value(_UserID))
+}
+
+func (s *svcContext) UserName() string {
+	return cast.ToString(s.ctx.Value(_UserName))
+}
+
+func (s *svcContext) Context() stdContext.Context {
+	return s.ctx
+}
+
+func (s *svcContext) Logger() *zap.Logger {
+	return s.logger
+}
+
+func (c *context) SvcContext() SvcContext {
+	ctx := c.RequestContext().Request.Context()
+
+	// 用户信息设置进去
+	ctx = stdContext.WithValue(ctx, _UserID, c.UserID())
+	ctx = stdContext.WithValue(ctx, _UserName, c.UserName())
+
+	return &svcContext{
+		ctx:    ctx,
+		logger: c.Logger(),
+	}
 }
 
 // URI unescape后的uri

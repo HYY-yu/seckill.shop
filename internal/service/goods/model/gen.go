@@ -1,2 +1,2 @@
-//go:generate gormt -uroot -dseckill -bgoods -o .
+//go:generate gormt -uroot -proot -dseckill -bgoods -o .
 package model

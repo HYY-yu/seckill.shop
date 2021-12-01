@@ -11,10 +11,9 @@ import (
 	"github.com/HYY-yu/seckill/internal/service/goods/api/repo"
 	"github.com/HYY-yu/seckill/internal/service/goods/api/svc"
 	"github.com/google/wire"
-	"go.uber.org/zap"
 )
 
 // initControllers init Controllers.
-func initControllers(l *zap.Logger, d db.Repo, c cache.Repo) (*Controllers, error) {
+func initControllers(d db.Repo, c cache.Repo) (*Controllers, error) {
 	panic(wire.Build(repo.NewGoodsRepo, svc.NewGoodsSvc, controller.NewGoodsController, NewControllers))
 }
