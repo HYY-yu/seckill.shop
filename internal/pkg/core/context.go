@@ -62,12 +62,20 @@ type Context interface {
 	// tag: `uri:"xxx"`
 	ShouldBindURI(obj interface{}) error
 
+	// Header 获取 Header 对象
+	Header() http.Header
+	// GetHeader 获取 Header
+	GetHeader(key string) string
+	// SetHeader 设置 Header
+	SetHeader(key, value string)
+
+	// URI unescape后的uri
+	URI() string
+	// RequestData 获取请求体（可多次读取）
+	RequestData() []byte
+
 	// Redirect 重定向
 	Redirect(code int, location string)
-
-	// Logger 获取 Logger 对象
-	Logger() *zap.Logger
-	setLogger(logger *zap.Logger)
 
 	// Payload 正确返回
 	Payload(payload interface{})
@@ -79,15 +87,12 @@ type Context interface {
 	// AbortWithError 错误返回
 	AbortWithError(err error)
 
+	// Logger 获取 Logger 对象
+	Logger() *zap.Logger
+	setLogger(logger *zap.Logger)
+
 	DisableLog(flag bool)
 	getDisableLog() bool
-
-	// Header 获取 Header 对象
-	Header() http.Header
-	// GetHeader 获取 Header
-	GetHeader(key string) string
-	// SetHeader 设置 Header
-	SetHeader(key, value string)
 
 	// UserID 获取 UserID
 	UserID() int64
@@ -97,17 +102,10 @@ type Context interface {
 	UserName() string
 	setUserName(userName string)
 
-	// RequestInputParams 获取所有参数
-	RequestInputParams() url.Values
-	// RequestPostFormParams  获取 PostForm 参数
-	RequestPostFormParams() url.Values
-
 	// RequestContext 获取GIN的 context
 	RequestContext() *gin.Context
 	// SvcContext 给下层用的context
 	SvcContext() SvcContext
-	// URI unescape后的uri
-	URI() string
 }
 
 type context struct {
@@ -241,18 +239,6 @@ func (c *context) UserName() string {
 
 func (c *context) setUserName(userName string) {
 	c.ctx.Set(_UserName, userName)
-}
-
-// RequestInputParams 获取所有参数
-func (c *context) RequestInputParams() url.Values {
-	_ = c.ctx.Request.ParseForm()
-	return c.ctx.Request.Form
-}
-
-// RequestPostFormParams 获取 PostForm 参数
-func (c *context) RequestPostFormParams() url.Values {
-	_ = c.ctx.Request.ParseForm()
-	return c.ctx.Request.PostForm
 }
 
 func (c *context) RequestData() []byte {

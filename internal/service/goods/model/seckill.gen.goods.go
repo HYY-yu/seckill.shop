@@ -45,14 +45,9 @@ func (obj *_GoodsMgr) Gets() (results []*Goods, err error) {
 	return
 }
 
-////////////////////////////////// gorm replace /////////////////////////////////
 func (obj *_GoodsMgr) Count(count *int64) (tx *gorm.DB) {
 	return obj.DB.WithContext(obj.ctx).Model(Goods{}).Count(count)
 }
-
-//////////////////////////////////////////////////////////////////////////////////
-
-//////////////////////////option case ////////////////////////////////////////////
 
 // WithID id获取
 func (obj *_GoodsMgr) WithID(id int) Option {
@@ -78,36 +73,6 @@ func (obj *_GoodsMgr) WithCount(count int) Option {
 func (obj *_GoodsMgr) WithCreateTime(createTime int) Option {
 	return optionFunc(func(o *options) { o.query["create_time"] = createTime })
 }
-
-// GetByOption 功能选项模式获取
-func (obj *_GoodsMgr) GetByOption(opts ...Option) (result Goods, err error) {
-	options := options{
-		query: make(map[string]interface{}, len(opts)),
-	}
-	for _, o := range opts {
-		o.apply(&options)
-	}
-
-	err = obj.DB.WithContext(obj.ctx).Model(Goods{}).Where(options.query).Find(&result).Error
-
-	return
-}
-
-// GetByOptions 批量功能选项模式获取
-func (obj *_GoodsMgr) GetByOptions(opts ...Option) (results []*Goods, err error) {
-	options := options{
-		query: make(map[string]interface{}, len(opts)),
-	}
-	for _, o := range opts {
-		o.apply(&options)
-	}
-
-	err = obj.DB.WithContext(obj.ctx).Model(Goods{}).Where(options.query).Find(&results).Error
-
-	return
-}
-
-//////////////////////////enume case ////////////////////////////////////////////
 
 // GetFromID 通过id获取内容
 func (obj *_GoodsMgr) GetFromID(id int) (result Goods, err error) {
@@ -179,11 +144,20 @@ func (obj *_GoodsMgr) GetBatchFromCreateTime(createTimes []int) (results []*Good
 	return
 }
 
-//////////////////////////primary index case ////////////////////////////////////////////
+func (obj *_GoodsMgr) CreateGoods(bean *Goods) (err error) {
+	err = obj.DB.WithContext(obj.ctx).Model(Goods{}).Create(bean).Error
 
-// FetchByPrimaryKey primary or index 获取唯一内容
-func (obj *_GoodsMgr) FetchByPrimaryKey(id int) (result Goods, err error) {
-	err = obj.DB.WithContext(obj.ctx).Model(Goods{}).Where("`id` = ?", id).Find(&result).Error
+	return
+}
+
+func (obj *_GoodsMgr) UpdateGoods(bean *Goods) (err error) {
+	err = obj.DB.WithContext(obj.ctx).Model(bean).Updates(bean).Error
+
+	return
+}
+
+func (obj *_GoodsMgr) DeleteGoods() (err error) {
+	err = obj.DB.WithContext(obj.ctx).Model(Goods{}).Error
 
 	return
 }

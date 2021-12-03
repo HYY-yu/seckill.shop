@@ -2,7 +2,6 @@ package model
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"gorm.io/gorm"
@@ -17,6 +16,51 @@ type _BaseMgr struct {
 	cancel    context.CancelFunc
 	timeout   time.Duration
 	isRelated bool
+}
+
+// WithContext set context to db
+func (obj *_BaseMgr) WithContext(c context.Context) {
+	if obj.DB != nil {
+		obj.DB = obj.DB.WithContext(c)
+	}
+}
+
+func (obj *_BaseMgr) WithSelects(idName string, selects ...string) {
+	if len(selects) > 0 {
+		if len(idName) > 0 {
+			selects = append(selects, idName)
+		}
+		// 对Select进行去重
+		selectMap := make(map[string]int, len(selects))
+		for _, e := range selects {
+			if _, ok := selectMap[e]; !ok {
+				selectMap[e] = 1
+			}
+		}
+
+		newSelects := make([]string, 0, len(selects))
+		for k, _ := range selectMap {
+			newSelects = append(newSelects, k)
+		}
+
+		obj.DB = obj.DB.Select(newSelects)
+	}
+}
+
+func (obj *_BaseMgr) WithOmit(omit ...string) {
+	if len(omit) > 0 {
+		obj.DB = obj.DB.Omit(omit...)
+	}
+}
+
+func (obj *_BaseMgr) WithOptions(opts ...Option) {
+	options := options{
+		query: make(map[string]interface{}, len(opts)),
+	}
+	for _, o := range opts {
+		o.apply(&options)
+	}
+	obj.DB = obj.DB.Where(options.query)
 }
 
 // SetTimeOut set timeout
@@ -97,61 +141,30 @@ func CloseRelated() {
 	globalIsRelated = true
 }
 
-// 自定义sql查询
-type Condition struct {
-	list []*conditionInfo
+// -------- sql where helper ----------
+
+type CheckWhere func(v interface{}) bool
+type DoWhere func(*gorm.DB) *gorm.DB
+
+// CheckWhere 函数 如果返回true，则表明 DoWhere 的查询条件需要加到sql中去
+func (w *_BaseMgr) AddWhere(v interface{}, c CheckWhere, d DoWhere) *_BaseMgr {
+	if c(v) {
+		w.DB = d(w.DB)
+	}
+	return w
 }
 
-// And a condition by and .and 一个条件
-func (c *Condition) And(column string, cases string, value interface{}) {
-	c.list = append(c.list, &conditionInfo{
-		andor:  "and",
-		column: column, // 列名
-		case_:  cases,  // 条件(and,or,in,>=,<=)
-		value:  value,
-	})
-}
-
-// Or a condition by or .or 一个条件
-func (c *Condition) Or(column string, cases string, value interface{}) {
-	c.list = append(c.list, &conditionInfo{
-		andor:  "or",
-		column: column, // 列名
-		case_:  cases,  // 条件(and,or,in,>=,<=)
-		value:  value,
-	})
-}
-
-func (c *Condition) Get() (where string, out []interface{}) {
-	firstAnd := -1
-	for i := 0; i < len(c.list); i++ { // 查找第一个and
-		if c.list[i].andor == "and" {
-			where = fmt.Sprintf("`%v` %v ?", c.list[i].column, c.list[i].case_)
-			out = append(out, c.list[i].value)
-			firstAnd = i
-			break
+func (w *_BaseMgr) Sort(userSort, defaultSort string) *_BaseMgr {
+	if len(userSort) > 0 {
+		w.DB = w.DB.Order(userSort)
+	} else {
+		if len(defaultSort) > 0 {
+			w.DB = w.DB.Order(defaultSort)
 		}
 	}
-
-	if firstAnd < 0 && len(c.list) > 0 { // 补刀
-		where = fmt.Sprintf("`%v` %v ?", c.list[0].column, c.list[0].case_)
-		out = append(out, c.list[0].value)
-		firstAnd = 0
-	}
-
-	for i := 0; i < len(c.list); i++ { // 添加剩余的
-		if firstAnd != i {
-			where += fmt.Sprintf(" %v `%v` %v ?", c.list[i].andor, c.list[i].column, c.list[i].case_)
-			out = append(out, c.list[i].value)
-		}
-	}
-
-	return
+	return w
 }
 
-type conditionInfo struct {
-	andor  string
-	column string // 列名
-	case_  string // 条件(in,>=,<=)
-	value  interface{}
+func (w *_BaseMgr) Build() *gorm.DB {
+	return w.DB
 }
