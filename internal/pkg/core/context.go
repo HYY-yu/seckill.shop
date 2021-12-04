@@ -151,6 +151,9 @@ func (c *context) setLogger(logger *zap.Logger) {
 func (c *context) Payload(payload interface{}) {
 	resp := response.NewResponse(payload)
 
+	if _, exist := c.ctx.Get(_Response); exist {
+		return
+	}
 	c.ctx.JSON(http.StatusOK, resp)
 	c.ctx.Set(_Response, resp)
 }

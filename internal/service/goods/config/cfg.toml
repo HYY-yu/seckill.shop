@@ -9,7 +9,7 @@ maxIdleConn = 60
 maxOpenConn = 10
 addr = "127.0.0.1:3306"
 name = "seckill"
-pass = ""
+pass = "root"
 user = "root"
 
 [redis]
@@ -28,7 +28,7 @@ stdout = true
 [server]
 serverName = "sk_shop_goods"
 host = ":8081"
-pprof = false
+pprof = true
 
 [jaeger]
 udpEndpoint="http://localhost:14268/api/traces"

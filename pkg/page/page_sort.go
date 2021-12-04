@@ -13,7 +13,7 @@ import (
 // 分页 排序 帮助函数
 
 type Page struct {
-	TotalCount int         `json:"count"`
+	TotalCount int64       `json:"count"`
 	List       interface{} `json:"list"`
 }
 
@@ -21,7 +21,7 @@ func Offset(pageNo int, pageSize int) int {
 	return (pageNo - 1) * pageSize
 }
 
-func NewPage(count int, list interface{}) *Page {
+func NewPage(count int64, list interface{}) *Page {
 	page := Page{
 		TotalCount: count,
 		List:       list,
@@ -49,8 +49,8 @@ func NewPageRequest(pi, ps int, sort string, filter map[string]interface{}) *Pag
 }
 
 func NewPageFromRequest(rForm url.Values) *PageRequest {
-	pi := cast.ToInt(rForm.Get("pageIndex"))
-	ps := cast.ToInt(rForm.Get("pageSize"))
+	pi := cast.ToInt(rForm.Get("page_index"))
+	ps := cast.ToInt(rForm.Get("page_size"))
 	sort := cast.ToString(rForm.Get("sort"))
 	req := NewPageRequest(pi, ps, sort, nil)
 	req.checkField()
@@ -78,14 +78,14 @@ func NewPageFromRequestJSON(requestBody []byte) (*PageRequest, error) {
 	}
 
 	gj := gjson.ParseBytes(requestBody)
-	req.PageIndex = int(gj.Get("pageIndex").Int())
-	req.PageSize = int(gj.Get("pageSize").Int())
+	req.PageIndex = int(gj.Get("page_index").Int())
+	req.PageSize = int(gj.Get("page_size").Int())
 	req.SortBy = gj.Get("sort").String()
 	req.checkField()
 
 	for k, v := range gj.Map() {
 		switch k {
-		case "pageIndex", "pageSize", "sort":
+		case "page_index", "page_size", "sort":
 		default:
 			switch v.Type {
 			case gjson.JSON, gjson.Null:

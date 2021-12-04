@@ -18,10 +18,10 @@ require (
 	github.com/rs/cors v1.8.0
 	github.com/spf13/cast v1.4.1
 	github.com/spf13/viper v1.9.0
-	github.com/stretchr/testify v1.7.0 // indirect
+	github.com/stretchr/testify v1.7.0
 	github.com/swaggo/gin-swagger v1.3.2
 	github.com/swaggo/swag v1.7.0 // indirect
-	github.com/tidwall/gjson v1.11.0 // indirect
+	github.com/tidwall/gjson v1.11.0
 	github.com/ugorji/go v1.1.13 // indirect
 	go.opentelemetry.io/otel v1.1.0
 	go.opentelemetry.io/otel/exporters/jaeger v1.1.0

@@ -20,15 +20,21 @@ func NewGoodsController(goodsSvc *svc.GoodsSvc) *GoodsController {
 }
 
 func (s *GoodsController) List(c core.Context) {
-	var pageRequest page.PageRequest
-	err := c.ShouldBindForm(&pageRequest)
+	err := c.RequestContext().Request.ParseForm()
 	if err != nil {
 		c.AbortWithError(response.NewErrorAutoMsg(
 			http.StatusBadRequest,
 			response.ParamBindError,
 		).WithErr(err))
 	}
-	data, err := s.goodsSvc.List(c.SvcContext(), &pageRequest)
+	pageRequest := page.NewPageFromRequest(c.RequestContext().Request.Form)
+	if err != nil {
+		c.AbortWithError(response.NewErrorAutoMsg(
+			http.StatusBadRequest,
+			response.ParamBindError,
+		).WithErr(err))
+	}
+	data, err := s.goodsSvc.List(c.SvcContext(), pageRequest)
 	c.AbortWithError(err)
 	c.Payload(data)
 }

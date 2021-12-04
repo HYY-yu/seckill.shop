@@ -2,7 +2,10 @@ package response
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"path"
+	"runtime"
 )
 
 var _ Error = (*err)(nil)
@@ -68,6 +71,11 @@ func (e *err) Error() string {
 }
 
 func (e *err) WithErr(err error) Error {
+	// 找上级调用者
+	_, f, l, ok := runtime.Caller(1)
+	if ok {
+		err = fmt.Errorf("%w in file: %s:%d", err, path.Base(f), l)
+	}
 	e.Err = err
 	return e
 }

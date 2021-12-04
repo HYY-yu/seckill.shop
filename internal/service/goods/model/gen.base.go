@@ -144,12 +144,12 @@ func CloseRelated() {
 // -------- sql where helper ----------
 
 type CheckWhere func(v interface{}) bool
-type DoWhere func(*gorm.DB) *gorm.DB
+type DoWhere func(*gorm.DB, interface{}) *gorm.DB
 
 // CheckWhere 函数 如果返回true，则表明 DoWhere 的查询条件需要加到sql中去
 func (w *_BaseMgr) AddWhere(v interface{}, c CheckWhere, d DoWhere) *_BaseMgr {
 	if c(v) {
-		w.DB = d(w.DB)
+		w.DB = d(w.DB, v)
 	}
 	return w
 }
@@ -163,8 +163,4 @@ func (w *_BaseMgr) Sort(userSort, defaultSort string) *_BaseMgr {
 		}
 	}
 	return w
-}
-
-func (w *_BaseMgr) Build() *gorm.DB {
-	return w.DB
 }
