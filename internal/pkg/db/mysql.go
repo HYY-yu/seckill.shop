@@ -70,7 +70,6 @@ func dbConnect(user, pass, addr, dbName string) (*gorm.DB, error) {
 		return nil, werror.Wrap(err, fmt.Sprintf("[db connection failed] Database name: %s", dbName))
 	}
 	db.Set("gorm:table_options", "CHARSET=utf8mb4")
-
 	cfg := config.Get().MySQL.Base
 
 	sqlDB, err := db.DB()

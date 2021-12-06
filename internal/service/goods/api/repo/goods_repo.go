@@ -24,10 +24,10 @@ func (*GoodsRepo) ListGoods(ctx context.Context, db *gorm.DB,
 	goodMgr := model.GoodsMgr(db)
 
 	err = goodMgr.
-		AddWhere(filter[model.GoodsColumns.Name], util.IsZero, func(db *gorm.DB, v interface{}) *gorm.DB {
+		AddWhere(filter[model.GoodsColumns.Name], util.IsNotZero, func(db *gorm.DB, v interface{}) *gorm.DB {
 			return db.Where(model.GoodsColumns.Name+" LIKE ?", "%"+cast.ToString(v)+"%")
 		}).
-		AddWhere(filter[model.GoodsColumns.ID], util.IsZero, func(db *gorm.DB, i interface{}) *gorm.DB {
+		AddWhere(filter[model.GoodsColumns.ID], util.IsNotZero, func(db *gorm.DB, i interface{}) *gorm.DB {
 			return db.Where(model.GoodsColumns.ID+" = ?", i)
 		}).
 		Sort(sort, "id desc").

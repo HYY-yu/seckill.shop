@@ -1,7 +1,6 @@
 package svc
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/HYY-yu/seckill/internal/pkg/cache"
@@ -36,7 +35,6 @@ func (s *GoodsSvc) List(sctx core.SvcContext, pr *page.PageRequest) (*page.Page,
 	sort, _ := pr.Sort()
 
 	data, err := s.GoodsRepo.ListGoods(ctx, s.DB.GetDb(ctx), limit, offset, pr.Filter, sort)
-	err = errors.New("xx")
 	if err != nil {
 		return nil, response.NewErrorAutoMsg(
 			http.StatusInternalServerError,
@@ -51,8 +49,24 @@ func (s *GoodsSvc) List(sctx core.SvcContext, pr *page.PageRequest) (*page.Page,
 			response.ServerError,
 		).WithErr(err)
 	}
+	var result = make([]model.GoodsListResp, len(data))
+	for i := range data {
+		r := model.GoodsListResp{
+			ID:         data[i].ID,
+			Name:       data[i].Name,
+			Desc:       data[i].Desc,
+			Count:      data[i].Count,
+			CreateTime: data[i].CreateTime,
+		}
+		result[i] = r
+	}
+
 	return page.NewPage(
 		count,
-		data,
+		result,
 	), nil
+}
+
+func (s *GoodsSvc) AddGoods(sctx core.SvcContext) {
+
 }
