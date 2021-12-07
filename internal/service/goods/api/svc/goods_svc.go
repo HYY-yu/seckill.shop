@@ -9,6 +9,7 @@ import (
 	"github.com/HYY-yu/seckill/internal/pkg/db"
 	"github.com/HYY-yu/seckill/internal/service/goods/api/repo"
 	"github.com/HYY-yu/seckill/internal/service/goods/model"
+	"github.com/HYY-yu/seckill/pkg/mysqlerr_helper"
 	"github.com/HYY-yu/seckill/pkg/page"
 	"github.com/HYY-yu/seckill/pkg/response"
 )
@@ -83,6 +84,12 @@ func (s *GoodsSvc) AddGoods(sctx core.SvcContext, param *model.GoodsAdd) error {
 
 	err := mgr.CreateGoods(bean)
 	if err != nil {
+		if mysqlerr_helper.IsMysqlDupEntryError(err) {
+			return response.NewErrorWithStatusOk(
+				response.ParamBindError,
+				"商品名重复",
+			)
+		}
 		return response.NewErrorAutoMsg(
 			http.StatusInternalServerError,
 			response.ServerError,
