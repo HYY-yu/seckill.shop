@@ -30,14 +30,10 @@ func (s *GoodsController) List(c core.Context) {
 			http.StatusBadRequest,
 			response.ParamBindError,
 		).WithErr(err))
+		return
 	}
 	pageRequest := page.NewPageFromRequest(c.RequestContext().Request.Form)
-	if err != nil {
-		c.AbortWithError(response.NewErrorAutoMsg(
-			http.StatusBadRequest,
-			response.ParamBindError,
-		).WithErr(err))
-	}
+
 	data, err := s.goodsSvc.List(c.SvcContext(), pageRequest)
 	c.AbortWithError(err)
 	c.Payload(data)
@@ -45,24 +41,52 @@ func (s *GoodsController) List(c core.Context) {
 
 func (s *GoodsController) Add(c core.Context) {
 	params := &model.GoodsAdd{}
-	err := c.ShouldBindJSON(&params)
+	err := c.ShouldBindJSON(params)
 	if err != nil {
 		c.AbortWithError(response.NewErrorAutoMsg(
 			http.StatusBadRequest,
 			response.ParamBindError,
 		).WithErr(err))
+		return
 	}
 
-	validErr := gvalid.CheckStruct(context.Background(), &params, nil)
+	validErr := gvalid.CheckStruct(context.Background(), params, nil)
 	if validErr != nil {
 		c.AbortWithError(response.NewError(
 			http.StatusBadRequest,
 			response.ParamBindError,
 			validErr.Error(),
 		))
+		return
 	}
 
 	err = s.goodsSvc.AddGoods(c.SvcContext(), params)
+	c.AbortWithError(err)
+	c.Payload(nil)
+}
+
+func (s *GoodsController) Update(c core.Context) {
+	params := &model.GoodsUpdate{}
+	err := c.ShouldBindJSON(params)
+	if err != nil {
+		c.AbortWithError(response.NewErrorAutoMsg(
+			http.StatusBadRequest,
+			response.ParamBindError,
+		).WithErr(err))
+		return
+	}
+
+	validErr := gvalid.CheckStruct(context.Background(), params, nil)
+	if validErr != nil {
+		c.AbortWithError(response.NewError(
+			http.StatusBadRequest,
+			response.ParamBindError,
+			validErr.Error(),
+		))
+		return
+	}
+
+	err = s.goodsSvc.UpdateGoods(c.SvcContext(), params)
 	c.AbortWithError(err)
 	c.Payload(nil)
 }

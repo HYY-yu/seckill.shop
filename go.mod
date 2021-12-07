@@ -3,13 +3,14 @@ module github.com/HYY-yu/seckill
 go 1.16
 
 require (
-	github.com/VividCortex/mysqlerr v1.0.0 // indirect
+	github.com/VividCortex/mysqlerr v1.0.0
 	github.com/fsnotify/fsnotify v1.5.1
 	github.com/gin-contrib/pprof v1.3.0
 	github.com/gin-gonic/gin v1.7.4
 	github.com/go-openapi/spec v0.20.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-redis/redis/v8 v8.11.4
+	github.com/go-sql-driver/mysql v1.6.0
 	github.com/gogf/gf/v2 v2.0.0-beta
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/wire v0.5.0

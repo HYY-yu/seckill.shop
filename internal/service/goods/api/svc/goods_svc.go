@@ -78,7 +78,7 @@ func (s *GoodsSvc) AddGoods(sctx core.SvcContext, param *model.GoodsAdd) error {
 	bean := &model.Goods{
 		Name:       param.Name,
 		Desc:       param.Desc,
-		Count:      param.Count,
+		Count:      int(param.Count),
 		CreateTime: int(now),
 	}
 
@@ -95,5 +95,43 @@ func (s *GoodsSvc) AddGoods(sctx core.SvcContext, param *model.GoodsAdd) error {
 			response.ServerError,
 		).WithErr(err)
 	}
+	return nil
+}
+
+func (s *GoodsSvc) UpdateGoods(sctx core.SvcContext, param *model.GoodsUpdate) error {
+	ctx := sctx.Context()
+	mgr := s.GoodsRepo.Mgr(ctx, s.DB.GetDb(ctx))
+
+	bean := &model.Goods{
+		ID: param.Id,
+	}
+	updateColumns := make([]string, 0)
+
+	if param.Name != nil {
+		bean.Name = *param.Name
+		updateColumns = append(updateColumns, model.GoodsColumns.Name)
+	}
+	if param.Desc != nil {
+		bean.Desc = *param.Desc
+		updateColumns = append(updateColumns, model.GoodsColumns.Desc)
+	}
+	if param.Count != nil {
+		bean.Count = int(*param.Count)
+		updateColumns = append(updateColumns, model.GoodsColumns.Count)
+	}
+
+	err := mgr.WithSelects(model.GoodsColumns.ID, updateColumns...).UpdateGoods(bean)
+	if err != nil {
+		return response.NewErrorAutoMsg(
+			http.StatusInternalServerError,
+			response.ServerError,
+		).WithErr(err)
+	}
+	return nil
+}
+
+func (s *GoodsSvc) DeleteGoods(sctx core.SvcContext, goodsId int) error {
+	// 软删除
+
 	return nil
 }

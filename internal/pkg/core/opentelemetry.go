@@ -107,7 +107,6 @@ func (o *OpenTelemetry) Telemetry(c Context) {
 		zap.Any("http_code", telemetry.HttpCode),
 		zap.Any("business_code", telemetry.BusinessCode),
 		zap.Any("cost_seconds", telemetry.CostSeconds),
-		zap.Any("trace_id", traceId),
 	)
 }
 

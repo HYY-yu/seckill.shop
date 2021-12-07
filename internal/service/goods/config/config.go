@@ -56,7 +56,7 @@ type Config struct {
 func InitConfig() {
 	viper.SetConfigName("cfg")
 	viper.SetConfigType("toml")
-	viper.AddConfigPath("../config")
+	viper.AddConfigPath("./internal/service/goods/config")
 
 	if err := viper.ReadInConfig(); err != nil {
 		panic(err)

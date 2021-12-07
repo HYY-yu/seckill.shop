@@ -7,5 +7,7 @@ func (s *Server) Route(c *Controllers) {
 		// v1Group.Use(core.WrapAuthHandler(s.Middles.Jwt))
 
 		v1Group.GET("/list", c.goodsController.List)
+		v1Group.PUT("/resource", c.goodsController.Add)
+		v1Group.POST("/resource", c.goodsController.Update)
 	}
 }
