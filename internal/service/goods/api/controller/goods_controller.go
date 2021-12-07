@@ -90,3 +90,32 @@ func (s *GoodsController) Update(c core.Context) {
 	c.AbortWithError(err)
 	c.Payload(nil)
 }
+
+func (s *GoodsController) Delete(c core.Context) {
+	type DeleteParam struct {
+		Id int `form:"id" v:"required"`
+	}
+	param := &DeleteParam{}
+	err := c.ShouldBindForm(param)
+	if err != nil {
+		c.AbortWithError(response.NewErrorAutoMsg(
+			http.StatusBadRequest,
+			response.ParamBindError,
+		).WithErr(err))
+		return
+	}
+
+	validErr := gvalid.CheckStruct(context.Background(), param, nil)
+	if validErr != nil {
+		c.AbortWithError(response.NewError(
+			http.StatusBadRequest,
+			response.ParamBindError,
+			validErr.Error(),
+		))
+		return
+	}
+
+	err = s.goodsSvc.DeleteGoods(c.SvcContext(), param.Id)
+	c.AbortWithError(err)
+	c.Payload(nil)
+}

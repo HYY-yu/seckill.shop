@@ -132,6 +132,20 @@ func (s *GoodsSvc) UpdateGoods(sctx core.SvcContext, param *model.GoodsUpdate) e
 
 func (s *GoodsSvc) DeleteGoods(sctx core.SvcContext, goodsId int) error {
 	// 软删除
+	ctx := sctx.Context()
+	mgr := s.GoodsRepo.Mgr(ctx, s.DB.GetDb(ctx))
+	now := time.Now().Unix()
 
+	bean := &model.Goods{
+		ID:         goodsId,
+		DeleteTime: int(now),
+	}
+	err := mgr.UpdateGoods(bean)
+	if err != nil {
+		return response.NewErrorAutoMsg(
+			http.StatusInternalServerError,
+			response.ServerError,
+		).WithErr(err)
+	}
 	return nil
 }
