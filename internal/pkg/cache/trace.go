@@ -4,12 +4,13 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/HYY-yu/seckill/internal/service/goods/config"
 	"github.com/go-redis/redis/v8"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
+
+	"github.com/HYY-yu/seckill/internal/service/goods/config"
 )
 
 type Redis struct {

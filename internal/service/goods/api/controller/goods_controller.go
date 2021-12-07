@@ -2,8 +2,9 @@ package controller
 
 import (
 	"context"
-	"github.com/gogf/gf/v2/util/gvalid"
 	"net/http"
+
+	"github.com/gogf/gf/v2/util/gvalid"
 
 	"github.com/HYY-yu/seckill/internal/pkg/core"
 	"github.com/HYY-yu/seckill/internal/service/goods/api/svc"

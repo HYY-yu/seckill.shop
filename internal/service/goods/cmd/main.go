@@ -5,9 +5,10 @@ import (
 	"net/http"
 	"time"
 
+	"go.uber.org/zap"
+
 	"github.com/HYY-yu/seckill/internal/service/goods/api"
 	"github.com/HYY-yu/seckill/internal/service/goods/config"
-	"go.uber.org/zap"
 
 	"github.com/HYY-yu/seckill/pkg/logger"
 	"github.com/HYY-yu/seckill/pkg/shutdown"

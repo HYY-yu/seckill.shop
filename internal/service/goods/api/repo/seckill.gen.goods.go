@@ -3,6 +3,7 @@ package repo
 import (
 	"context"
 	"fmt"
+
 	"gorm.io/gorm"
 
 	"github.com/HYY-yu/seckill/internal/service/goods/model"
