@@ -4,9 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"gorm.io/gorm"
-
 	"github.com/HYY-yu/seckill/internal/service/goods/model"
+	"gorm.io/gorm"
 )
 
 type _GoodsMgr struct {
@@ -16,7 +15,7 @@ type _GoodsMgr struct {
 // GoodsMgr open func
 func GoodsMgr(db *gorm.DB) *_GoodsMgr {
 	if db == nil {
-		panic(fmt.Errorf("_GoodsMgr need init by db"))
+		panic(fmt.Errorf("GoodsMgr need init by db"))
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	return &_GoodsMgr{_BaseMgr: &_BaseMgr{DB: db.Table("goods"), isRelated: globalIsRelated, ctx: ctx, cancel: cancel, timeout: -1}}
@@ -125,6 +124,11 @@ func (obj *_GoodsMgr) WithCreateTime(createTime int) Option {
 	return optionFunc(func(o *options) { o.query["create_time"] = createTime })
 }
 
+// WithDeleteTime delete_time获取
+func (obj *_GoodsMgr) WithDeleteTime(deleteTime int) Option {
+	return optionFunc(func(o *options) { o.query["delete_time"] = deleteTime })
+}
+
 // GetFromID 通过id获取内容
 func (obj *_GoodsMgr) GetFromID(id int) (result model.Goods, err error) {
 	err = obj.DB.WithContext(obj.ctx).Model(model.Goods{}).Where("`id` = ?", id).Find(&result).Error
@@ -140,8 +144,8 @@ func (obj *_GoodsMgr) GetBatchFromID(ids []int) (results []*model.Goods, err err
 }
 
 // GetFromName 通过name获取内容
-func (obj *_GoodsMgr) GetFromName(name string) (results []*model.Goods, err error) {
-	err = obj.DB.WithContext(obj.ctx).Model(model.Goods{}).Where("`name` = ?", name).Find(&results).Error
+func (obj *_GoodsMgr) GetFromName(name string) (result model.Goods, err error) {
+	err = obj.DB.WithContext(obj.ctx).Model(model.Goods{}).Where("`name` = ?", name).Find(&result).Error
 
 	return
 }
@@ -191,6 +195,20 @@ func (obj *_GoodsMgr) GetFromCreateTime(createTime int) (results []*model.Goods,
 // GetBatchFromCreateTime 批量查找
 func (obj *_GoodsMgr) GetBatchFromCreateTime(createTimes []int) (results []*model.Goods, err error) {
 	err = obj.DB.WithContext(obj.ctx).Model(model.Goods{}).Where("`create_time` IN (?)", createTimes).Find(&results).Error
+
+	return
+}
+
+// GetFromDeleteTime 通过delete_time获取内容
+func (obj *_GoodsMgr) GetFromDeleteTime(deleteTime int) (results []*model.Goods, err error) {
+	err = obj.DB.WithContext(obj.ctx).Model(model.Goods{}).Where("`delete_time` = ?", deleteTime).Find(&results).Error
+
+	return
+}
+
+// GetBatchFromDeleteTime 批量查找
+func (obj *_GoodsMgr) GetBatchFromDeleteTime(deleteTimes []int) (results []*model.Goods, err error) {
+	err = obj.DB.WithContext(obj.ctx).Model(model.Goods{}).Where("`delete_time` IN (?)", deleteTimes).Find(&results).Error
 
 	return
 }
