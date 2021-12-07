@@ -8,7 +8,7 @@ type JsonResponse struct {
 
 func NewResponse(payload ...interface{}) *JsonResponse {
 	responseData := interface{}(nil)
-	if len(payload) > 0 {
+	if len(payload) > 0 && payload[0] != nil {
 		responseData = payload[0]
 	} else {
 		responseData = make(map[string]interface{})

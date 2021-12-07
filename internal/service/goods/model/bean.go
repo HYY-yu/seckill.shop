@@ -9,7 +9,7 @@ type GoodsListResp struct {
 }
 
 type GoodsAdd struct {
-	Name  string `json:"name" v:""`
-	Desc  string `json:"desc"`
-	Count int    `json:"count"`
+	Name  string `json:"name" v:"required#请输入商品名称|length:3,10"`
+	Desc  string `json:"desc" v:"max-length:50"`
+	Count int    `json:"count" v:"required#请输入商品库存数"`
 }

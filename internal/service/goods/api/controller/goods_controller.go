@@ -1,10 +1,13 @@
 package controller
 
 import (
+	"context"
+	"github.com/gogf/gf/v2/util/gvalid"
 	"net/http"
 
 	"github.com/HYY-yu/seckill/internal/pkg/core"
 	"github.com/HYY-yu/seckill/internal/service/goods/api/svc"
+	"github.com/HYY-yu/seckill/internal/service/goods/model"
 	"github.com/HYY-yu/seckill/pkg/page"
 	"github.com/HYY-yu/seckill/pkg/response"
 )
@@ -37,4 +40,28 @@ func (s *GoodsController) List(c core.Context) {
 	data, err := s.goodsSvc.List(c.SvcContext(), pageRequest)
 	c.AbortWithError(err)
 	c.Payload(data)
+}
+
+func (s *GoodsController) Add(c core.Context) {
+	params := &model.GoodsAdd{}
+	err := c.ShouldBindJSON(&params)
+	if err != nil {
+		c.AbortWithError(response.NewErrorAutoMsg(
+			http.StatusBadRequest,
+			response.ParamBindError,
+		).WithErr(err))
+	}
+
+	validErr := gvalid.CheckStruct(context.Background(), &params, nil)
+	if validErr != nil {
+		c.AbortWithError(response.NewError(
+			http.StatusBadRequest,
+			response.ParamBindError,
+			validErr.Error(),
+		))
+	}
+
+	err = s.goodsSvc.AddGoods(c.SvcContext(), params)
+	c.AbortWithError(err)
+	c.Payload(nil)
 }

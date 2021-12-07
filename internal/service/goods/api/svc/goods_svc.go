@@ -2,6 +2,7 @@ package svc
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/HYY-yu/seckill/internal/pkg/cache"
 	"github.com/HYY-yu/seckill/internal/pkg/core"
@@ -16,10 +17,10 @@ type GoodsSvc struct {
 	DB    db.Repo
 	Cache cache.Repo
 
-	GoodsRepo *repo.GoodsRepo
+	GoodsRepo repo.GoodsRepo
 }
 
-func NewGoodsSvc(db db.Repo, ca cache.Repo, goodsRepo *repo.GoodsRepo) *GoodsSvc {
+func NewGoodsSvc(db db.Repo, ca cache.Repo, goodsRepo repo.GoodsRepo) *GoodsSvc {
 	return &GoodsSvc{
 		DB:        db,
 		Cache:     ca,
@@ -29,12 +30,13 @@ func NewGoodsSvc(db db.Repo, ca cache.Repo, goodsRepo *repo.GoodsRepo) *GoodsSvc
 
 func (s *GoodsSvc) List(sctx core.SvcContext, pr *page.PageRequest) (*page.Page, error) {
 	ctx := sctx.Context()
+	mgr := s.GoodsRepo.Mgr(ctx, s.DB.GetDb(ctx))
 
 	limit, offset := pr.GetLimitAndOffset()
 	pr.AddAllowSortField(model.GoodsColumns.CreateTime)
 	sort, _ := pr.Sort()
 
-	data, err := s.GoodsRepo.ListGoods(ctx, s.DB.GetDb(ctx), limit, offset, pr.Filter, sort)
+	data, err := mgr.ListGoods(limit, offset, pr.Filter, sort)
 	if err != nil {
 		return nil, response.NewErrorAutoMsg(
 			http.StatusInternalServerError,
@@ -42,7 +44,7 @@ func (s *GoodsSvc) List(sctx core.SvcContext, pr *page.PageRequest) (*page.Page,
 		).WithErr(err)
 	}
 
-	count, err := s.GoodsRepo.CountGoods(ctx, s.DB.GetDb(ctx), pr.Filter)
+	count, err := mgr.CountGoods(pr.Filter)
 	if err != nil {
 		return nil, response.NewErrorAutoMsg(
 			http.StatusInternalServerError,
@@ -67,6 +69,24 @@ func (s *GoodsSvc) List(sctx core.SvcContext, pr *page.PageRequest) (*page.Page,
 	), nil
 }
 
-func (s *GoodsSvc) AddGoods(sctx core.SvcContext) {
+func (s *GoodsSvc) AddGoods(sctx core.SvcContext, param *model.GoodsAdd) error {
+	ctx := sctx.Context()
+	mgr := s.GoodsRepo.Mgr(ctx, s.DB.GetDb(ctx))
+	now := time.Now().Unix()
 
+	bean := &model.Goods{
+		Name:       param.Name,
+		Desc:       param.Desc,
+		Count:      param.Count,
+		CreateTime: int(now),
+	}
+
+	err := mgr.CreateGoods(bean)
+	if err != nil {
+		return response.NewErrorAutoMsg(
+			http.StatusInternalServerError,
+			response.ServerError,
+		).WithErr(err)
+	}
+	return nil
 }
