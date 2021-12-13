@@ -20,7 +20,7 @@ import (
 // 默认情况下：
 // ciphertext,err := NewGoAES("Some Password",AES128).
 //         Encrypt(src)
-// 默认为： ECB模式 Base64编码 PKCS5 无iv
+// 默认为： CBC模式 Base64编码 PKCS5 自动生成iv
 
 // AESModel AES 的不同加密模式
 type AESModel int
@@ -37,10 +37,15 @@ const (
 	AES256 AESKeyLen = 32
 
 	// ECB 加密模式
-	// 每次加密
+	// 明文对应唯一密文，相同的明文会被转化成相同的密文
 	ECB AESModel = 1
 	// CBC 加密模式
+	// 明文不加密出唯一密文
+	// 只能串行化，速度慢
 	CBC AESModel = 2
+	// CTR 加密模式
+	// 流加密，速度快，无填充
+	CTR AESModel = 3
 )
 
 // GoAES AES 加密封装
@@ -132,6 +137,16 @@ func (a *GoAES) Encrypt(plaintext string) (string, error) {
 			// 默认使用 ciphertext 的第一个 block 作为 iv
 			ciphertext = append(a.iv, ciphertext...)
 		}
+	case CTR:
+		a.blockIvEncrypt()
+		ciphertext, err = a.ctrEncrypt(plainBytes)
+		if err != nil {
+			return "", nil
+		}
+		if !a.setIv {
+			// 默认使用 ciphertext 的第一个 block 作为 iv
+			ciphertext = append(a.iv, ciphertext...)
+		}
 	}
 
 	return a.encoder.EncodeToString(ciphertext), nil
@@ -156,6 +171,15 @@ func (a *GoAES) DecryptBytes(ciphertext []byte) (string, error) {
 			ciphertext, a.iv = a.blockIvDecrypt(ciphertext)
 		}
 		plainBytes, err = a.cbcDecrypt(ciphertext)
+		if err != nil {
+			return "", nil
+		}
+	case CTR:
+		if !a.setIv {
+			// 默认使用 ciphertext 的第一个 block 作为 iv
+			ciphertext, a.iv = a.blockIvDecrypt(ciphertext)
+		}
+		plainBytes, err = a.ctrDecrypt(ciphertext)
 		if err != nil {
 			return "", nil
 		}
@@ -194,7 +218,30 @@ func (a *GoAES) blockIvDecrypt(ciphertext []byte) (ct []byte, iv []byte) {
 	return ciphertext, a.iv
 }
 
-// cbcEncrypt CBC 模式加密
+func (a *GoAES) ctrEncrypt(plaintext []byte) ([]byte, error) {
+	block, err := aes.NewCipher(a.key)
+	if err != nil {
+		return nil, err
+	}
+	ciphertext := make([]byte, 0)
+
+	stream := cipher.NewCTR(block, a.iv)
+	stream.XORKeyStream(ciphertext[aes.BlockSize:], plaintext)
+	return ciphertext, nil
+}
+
+func (a *GoAES) ctrDecrypt(ciphertext []byte) ([]byte, error) {
+	block, err := aes.NewCipher(a.key)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	plaintext := make([]byte, 0)
+	stream := cipher.NewCTR(block, a.iv)
+	stream.XORKeyStream(plaintext, ciphertext[aes.BlockSize:])
+	return plaintext, nil
+}
+
 func (a *GoAES) cbcEncrypt(plaintext []byte) ([]byte, error) {
 	block, err := aes.NewCipher(a.key)
 	if err != nil {
@@ -207,8 +254,6 @@ func (a *GoAES) cbcEncrypt(plaintext []byte) ([]byte, error) {
 	return ciphertext, nil
 }
 
-// CBCDecrypt CBC 模式解密（pkcs5Padding）
-// 自动读取第一个 block 作为 iv, 若需要传递 iv，请使用 CBCDecryptWith
 func (a *GoAES) cbcDecrypt(ciphertext []byte) ([]byte, error) {
 	block, err := aes.NewCipher(a.key)
 	if err != nil {
