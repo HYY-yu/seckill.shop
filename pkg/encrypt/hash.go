@@ -57,11 +57,27 @@ func SHA256WithEncoding(s string, e Encoding) string {
 	return e.EncodeToString(m.Sum(nil))
 }
 
-// Salt 利用安全随机数生成器生成 8 位盐值
-func Salt() string {
-	nonce := make([]byte, 8)
+// Salt 利用安全随机数生成器生成盐值
+func Salt(e Encoding) string {
+	nonce := make([]byte, 4)
 	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
 		panic(err.Error())
 	}
-	return NewHexEncoding().EncodeToString(nonce)
+	//             8字节   4字节
+	// base64.Raw  11字    6字
+	// base64.Std  12字    8字
+	// base32.Raw  13字    7字
+	// base32.Std  16字    8字
+	// hex         16字    8字
+	return e.EncodeToString(nonce)
+}
+
+// Nonce 生成一个n位 ，只包含小写字母+数字的随机字符串
+func Nonce(n int) string {
+	nonce := make([]byte, n)
+	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
+		panic(err.Error())
+	}
+
+	return NewHexEncoding().EncodeToString(nonce)[:n]
 }

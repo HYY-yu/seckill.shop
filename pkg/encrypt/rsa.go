@@ -39,16 +39,18 @@ import (
 
 // RSA 加解密
 // SHA256 or SHA128
-// PKCS8
 
 const (
-	// RSAAlgorithmSign RSA签名算法
+	// RSAAlgorithmSignSHA256 RSA签名算法 SHA256
 	RSAAlgorithmSignSHA256 = crypto.SHA256
-	RSAAlgorithmSignSHA1   = crypto.SHA1
+	// RSAAlgorithmSignSHA1 RSA签名算法 SHA1
+	RSAAlgorithmSignSHA1 = crypto.SHA1
 )
 
 // NewRSAFile 生成密钥对文件
-// pubKeyFilename: 公钥文件名 priKeyFilename: 私钥文件名 keyLength: 密钥长度
+// pubKeyFilename: 公钥文件名
+// priKeyFilename: 私钥文件名
+// keyLength: 密钥长度
 func NewRSAFile(pubKeyFilename, priKeyFilename string, keyLength int) error {
 	if pubKeyFilename == "" {
 		pubKeyFilename = "id_rsa.pub"
@@ -85,6 +87,7 @@ func NewRSAFile(pubKeyFilename, priKeyFilename string, keyLength int) error {
 
 // NewRSAString 生成密钥对字符串
 // keyLength 密钥的长度
+// 生成 公钥、私钥
 func NewRSAString(keyLength int) (string, string, error) {
 	if keyLength == 0 || keyLength < 1024 {
 		keyLength = 1024
@@ -201,7 +204,7 @@ func NewGoRSA(publicKey, privateKey []byte, sign crypto.Hash) (*GoRSA, error) {
 	return nil, errors.New("private key not supported")
 }
 
-// NewGoRSAFromFile 初始化 GoRSA对象
+// NewGoRSAFromFile 初始化 GoRSA 从文件中加载秘钥
 func NewGoRSAFromFile(pubKeyFilename, priKeyFilename string, sign crypto.Hash) (*GoRSA, error) {
 	publicKey, privateKey, err := ReadRSAKeyPairFromFile(pubKeyFilename, priKeyFilename)
 	if err != nil {
@@ -227,13 +230,13 @@ func (r *GoRSA) PublicEncrypt(data []byte) ([]byte, error) {
 	return buffer.Bytes(), nil
 }
 
-func (r *GoRSA) PublicEncryptBase64(data []byte) (string, error) {
+// PublicEncryptWithEncoding 公钥加密，并转化成 Encoding 编码的字符串
+func (r *GoRSA) PublicEncryptWithEncoding(data []byte, e Encoding) (string, error) {
 	p, err := r.PublicEncrypt(data)
 	if err != nil {
 		return "", err
 	}
-	base64string := base64.RawURLEncoding.EncodeToString(p)
-	return base64string, nil
+	return e.EncodeToString(p), nil
 }
 
 // PrivateDecrypt 私钥解密
@@ -252,7 +255,20 @@ func (r *GoRSA) PrivateDecrypt(encrypted []byte) ([]byte, error) {
 	return buffer.Bytes(), nil
 }
 
-// Sign 数据进行签名
+// PrivateDecryptWithEncoding 先用 Encoding 解码 data，再进行解密
+func (r *GoRSA) PrivateDecryptWithEncoding(data string, e Encoding) ([]byte, error) {
+	encrytData, err := e.DecodeString(data)
+	if err != nil {
+		return nil, err
+	}
+	pd, err := r.PrivateDecrypt(encrytData)
+	if err != nil {
+		return nil, err
+	}
+	return pd, nil
+}
+
+// Sign 利用私钥对数据进行签名
 func (r *GoRSA) Sign(data string) (string, error) {
 	h := r.RSAAlgorithmSign.New()
 	h.Write([]byte(data))
@@ -264,7 +280,7 @@ func (r *GoRSA) Sign(data string) (string, error) {
 	return base64.StdEncoding.EncodeToString(sign), err
 }
 
-// Verify 数据验证签名
+// Verify 利用公钥验证数据签名
 func (r *GoRSA) Verify(data string, sign string) error {
 	h := r.RSAAlgorithmSign.New()
 	h.Write([]byte(data))
