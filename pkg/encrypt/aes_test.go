@@ -8,11 +8,11 @@ import (
 
 func Test_paddingKey(t *testing.T) {
 	x := paddingKey("123456789abcdefghi", AES128)
-	fmt.Println(x)
+	fmt.Println(string(x))
 	x = paddingKey("12345678", AES192)
-	fmt.Println(x)
+	fmt.Println(string(x))
 	x = paddingKey("12345678", AES256)
-	fmt.Println(x)
+	fmt.Println(string(x))
 }
 
 func TestGoAES_UnBase64(t *testing.T) {

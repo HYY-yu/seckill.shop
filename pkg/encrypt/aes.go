@@ -5,123 +5,221 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
-	"encoding/base64"
-	"errors"
 	"io"
+
+	"golang.org/x/crypto/scrypt"
 )
 
-// AES 加密解密
-// ( AES-128/192/256 )
-// ( CBC - / PKCS5 / 偏移量 block 0 )
-// ( ECB - / PKCS5 / )
+// AES 加密解密封装
+// 示例：
+//    ciphertext,err := NewGoAES("Some Password",AES128).
+//        WithModel(ECB).
+//        WithEncoding(NewBase64Encoding()).
+//        WithIv(iv).
+//        Encrypt(src)
+// 默认情况下：
+// ciphertext,err := NewGoAES("Some Password",AES128).
+//         Encrypt(src)
+// 默认为： ECB模式 Base64编码 PKCS5 无iv
+
+// AESModel AES 的不同加密模式
+type AESModel int
+
+// AESKeyLen AES 的密钥长度
+type AESKeyLen int
 
 const (
-	AES128 = 16
-	AES192 = 24
-	AES256 = 32
+	// AES128 16位密钥
+	AES128 AESKeyLen = 16
+	// AES192 24位密钥
+	AES192 AESKeyLen = 24
+	// AES256 32位密钥
+	AES256 AESKeyLen = 32
 
-	ECB = 1
-	CBC = 2
+	// ECB 加密模式
+	// 每次加密
+	ECB AESModel = 1
+	// CBC 加密模式
+	CBC AESModel = 2
 )
 
+// GoAES AES 加密封装
 type GoAES struct {
-	key []byte
+	key     []byte
+	model   AESModel
+	iv      []byte
+	setIv   bool
+	encoder Encoding
 }
 
-// type :AES-128 AES-192 AES-256
-func NewGoAES(key string, aestype int) *GoAES {
+// NewGoAES 新建一个 GoAES 对象
+// key 用于后期加、解密的密钥
+// aesLen 当key的长度不够\超过，会自动用0填充\根据 aesLen 截断
+// 注意：这种密码填充模式是不安全的，若要求安全的密码生成，请使用 NewGoAESSafety
+func NewGoAES(key string, aesLen AESKeyLen) *GoAES {
 	return &GoAES{
-		key: paddingKey(key, aestype),
+		key: paddingKey(key, aesLen),
 	}
 }
 
-func NewGoAESWith(key []byte) *GoAES {
+// NewGoAESSafety 此方法面向安全要求严格的应用
+// 利用了 scrypt 包计算密钥，salt 可以使用 encrypt.Salt 生成
+func NewGoAESSafety(key string, salt string, aesLen AESKeyLen) (a *GoAES, realKey []byte, err error) {
+	realKey, err = scrypt.Key([]byte(key), []byte(salt), 32768, 8, 1, int(aesLen))
+	if err != nil {
+		return
+	}
+
 	return &GoAES{
-		key: key,
+		key: realKey,
+	}, realKey, nil
+}
+
+// WithModel 设置 AESModel
+// 不设置，默认为ECB
+func (a *GoAES) WithModel(m AESModel) *GoAES {
+	a.model = m
+	return a
+}
+
+// WithEncoding
+// 不设置，默认为 Base64Encoding
+func (a *GoAES) WithEncoding(e Encoding) *GoAES {
+	a.encoder = e
+	return a
+}
+
+// WithIv
+// 不设置，默认为空（或者自动生成iv）
+func (a *GoAES) WithIv(iv []byte) *GoAES {
+	a.iv = iv
+	a.setIv = true
+	return a
+}
+
+func (a *GoAES) initConfig() {
+	if a.model == 0 {
+		a.model = ECB
+	}
+
+	if a.encoder == nil {
+		a.encoder = NewBase64Encoding()
 	}
 }
 
-// 加密 Base64
-func (self *GoAES) EnBase64(src string, model int) (result string, err error) {
-	var re []byte
-	if model == ECB {
-		re, err = self.ECBEncrypt([]byte(src))
-	} else if model == CBC {
-		re, err = self.CBCEncrypt([]byte(src))
-	} else {
-		err = errors.New("不支持的 model")
+// Encrypt 加密 plaintext
+func (a *GoAES) Encrypt(plaintext string) (string, error) {
+	a.initConfig()
+	plainBytes := []byte(plaintext)
+
+	var ciphertext []byte
+	var err error
+
+	switch a.model {
+	case ECB:
+		// 此模式不需要 IV
+		ciphertext, err = a.ecbEncrypt(plainBytes)
+		if err != nil {
+			return "", nil
+		}
+	case CBC:
+		a.blockIvEncrypt()
+		ciphertext, err = a.cbcEncrypt(plainBytes)
+		if err != nil {
+			return "", nil
+		}
+		if !a.setIv {
+			// 默认使用 ciphertext 的第一个 block 作为 iv
+			ciphertext = append(a.iv, ciphertext...)
+		}
 	}
 
-	if err != nil {
-		return "", err
-	}
-	return base64.StdEncoding.EncodeToString(re), nil
+	return a.encoder.EncodeToString(ciphertext), nil
 }
 
-// 解密 Base64
-func (self *GoAES) UnBase64(src string, model int) (string, error) {
-	result, err := base64.StdEncoding.DecodeString(src)
-	if err != nil {
-		return "", err
+// DecryptBytes 解密 , 和  Decrypt 的区别是，不会用 encoder 处理 ciphertext
+// 直接解密 ciphertext
+func (a *GoAES) DecryptBytes(ciphertext []byte) (string, error) {
+	var plainBytes []byte
+	var err error
+
+	switch a.model {
+	case ECB:
+		// 此模式不需要 IV
+		plainBytes, err = a.ecbDecrypt(ciphertext)
+		if err != nil {
+			return "", nil
+		}
+	case CBC:
+		if !a.setIv {
+			// 默认使用 ciphertext 的第一个 block 作为 iv
+			ciphertext, a.iv = a.blockIvDecrypt(ciphertext)
+		}
+		plainBytes, err = a.cbcDecrypt(ciphertext)
+		if err != nil {
+			return "", nil
+		}
 	}
 
-	var origData []byte
-	if model == ECB {
-		origData, err = self.ECBDecrypt(result)
-	} else if model == CBC {
-		origData, err = self.CBCDecrypt(result)
-	} else {
-		err = errors.New("不支持的 model")
-	}
-
-	if err != nil {
-		return "", err
-	}
-	return string(origData), nil
+	return string(plainBytes), nil
 }
 
-func (self *GoAES) CBCEncrypt(plaintext []byte) ([]byte, error) {
-	block, err := aes.NewCipher(self.key)
+// Decrypt 解密
+func (a *GoAES) Decrypt(ciphertext string) (string, error) {
+	a.initConfig()
+	cipherBytes, err := a.encoder.DecodeString(ciphertext)
+	if err != nil {
+		return "", err
+	}
+
+	return a.DecryptBytes(cipherBytes)
+}
+
+func (a *GoAES) blockIvEncrypt() {
+	if len(a.iv) == 0 {
+		iv := make([]byte, aes.BlockSize)
+		if _, err := io.ReadFull(rand.Reader, iv); err != nil {
+			panic(err)
+		}
+		a.iv = iv
+	}
+}
+
+func (a *GoAES) blockIvDecrypt(ciphertext []byte) (ct []byte, iv []byte) {
+	if len(a.iv) == 0 {
+		iv = ciphertext[:aes.BlockSize]
+		ct = ciphertext[aes.BlockSize:]
+		return
+	}
+	return ciphertext, a.iv
+}
+
+// cbcEncrypt CBC 模式加密
+func (a *GoAES) cbcEncrypt(plaintext []byte) ([]byte, error) {
+	block, err := aes.NewCipher(a.key)
 	if err != nil {
 		return nil, err
 	}
-
 	plaintext = pkcs5Padding(plaintext, block.BlockSize())
-	ciphertext := make([]byte, aes.BlockSize+len(plaintext))
+	ciphertext := make([]byte, 0)
 
-	iv := ciphertext[:aes.BlockSize]
-	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
-		panic(err)
-	}
-	cipher.NewCBCEncrypter(block, iv).CryptBlocks(ciphertext[aes.BlockSize:], plaintext)
+	cipher.NewCBCEncrypter(block, a.iv).CryptBlocks(ciphertext, plaintext)
 	return ciphertext, nil
 }
 
-func (self *GoAES) CBCDecrypt(ciphertext []byte) ([]byte, error) {
-	block, err := aes.NewCipher(self.key)
+// CBCDecrypt CBC 模式解密（pkcs5Padding）
+// 自动读取第一个 block 作为 iv, 若需要传递 iv，请使用 CBCDecryptWith
+func (a *GoAES) cbcDecrypt(ciphertext []byte) ([]byte, error) {
+	block, err := aes.NewCipher(a.key)
 	if err != nil {
 		return nil, err
 	}
-
-	iv := ciphertext[:aes.BlockSize]
-	ciphertext = ciphertext[aes.BlockSize:]
-
-	cipher.NewCBCDecrypter(block, iv).CryptBlocks(ciphertext, ciphertext)
+	cipher.NewCBCDecrypter(block, a.iv).CryptBlocks(ciphertext, ciphertext)
 	return pkcs5UnPadding(ciphertext), nil
 }
 
-func (self *GoAES) CBCDecryptWith(ciphertext []byte, iv []byte) ([]byte, error) {
-	block, err := aes.NewCipher(self.key)
-	if err != nil {
-		return nil, err
-	}
-
-	cipher.NewCBCDecrypter(block, iv).CryptBlocks(ciphertext, ciphertext)
-	return pkcs5UnPadding(ciphertext), nil
-}
-
-func (self *GoAES) ECBEncrypt(plaintext []byte) ([]byte, error) {
-	block, err := aes.NewCipher(self.key)
+func (a *GoAES) ecbEncrypt(plaintext []byte) ([]byte, error) {
+	block, err := aes.NewCipher(a.key)
 	if err != nil {
 		return nil, err
 	}
@@ -138,8 +236,8 @@ func (self *GoAES) ECBEncrypt(plaintext []byte) ([]byte, error) {
 	return ciphertext, nil
 }
 
-func (self *GoAES) ECBDecrypt(ciphertext []byte) ([]byte, error) {
-	block, err := aes.NewCipher(self.key)
+func (a *GoAES) ecbDecrypt(ciphertext []byte) ([]byte, error) {
+	block, err := aes.NewCipher(a.key)
 	if err != nil {
 		return nil, err
 	}
@@ -165,11 +263,12 @@ func pkcs5UnPadding(origData []byte) []byte {
 	return origData[:(len(origData) - unpadding)]
 }
 
-// 密码不够blockSize位则填充 0  // 然后返回 blockSize 位密码
-func paddingKey(key string, blockSize int) []byte {
+// paddingKey 密码不够blockSize位则填充 0
+// 然后返回 blockSize 位密码
+func paddingKey(key string, blockSize AESKeyLen) []byte {
 	var buffer bytes.Buffer
 	buffer.WriteString(key)
-	for i := len(key); i < blockSize; i++ {
+	for i := len(key); i < int(blockSize); i++ {
 		buffer.WriteString("0")
 	}
 	return buffer.Bytes()[:blockSize]
