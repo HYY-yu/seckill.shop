@@ -14,7 +14,7 @@ func callers() []uintptr {
 	return pcs[:l]
 }
 
-// Error a error with caller stack information
+// Error for error with caller stack information
 type Error interface {
 	error
 	t()

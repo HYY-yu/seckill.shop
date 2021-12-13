@@ -13,7 +13,7 @@ import (
 // InitJaeger initializes and registers jaeger to global TracerProvider.
 //
 // The output parameter `tp` is used for waiting exported trace spans to be uploaded,
-// which is useful if your program is ending and you do not want to lose recent spans.
+// which is useful if your program is ending, and you do not want to lose recent spans.
 func InitJaeger(serviceName, endpoint string) (tp *trace.TracerProvider, err error) {
 	var endpointOption jaeger.EndpointOption
 	endpointOption = jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(endpoint))
@@ -26,7 +26,7 @@ func InitJaeger(serviceName, endpoint string) (tp *trace.TracerProvider, err err
 	tp = trace.NewTracerProvider(
 		// Always be sure to batch in production.
 		trace.WithBatcher(exp),
-		// Record information about this application in an Resource.
+		// Record information about this application in a Resource.
 		trace.WithResource(resource.NewWithAttributes(
 			semconv.SchemaURL,
 			semconv.ServiceNameKey.String(serviceName),
@@ -49,7 +49,7 @@ func InitStdOutForDevelopment(serviceName, endpoint string) (tp *trace.TracerPro
 	tp = trace.NewTracerProvider(
 		// Always be sure to batch in production.
 		trace.WithBatcher(exp),
-		// Record information about this application in an Resource.
+		// Record information about this application in a Resource.
 		trace.WithResource(resource.NewWithAttributes(
 			semconv.SchemaURL,
 			semconv.ServiceNameKey.String(serviceName),

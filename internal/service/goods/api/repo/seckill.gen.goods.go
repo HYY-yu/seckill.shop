@@ -43,7 +43,7 @@ func (obj *_GoodsMgr) WithSelects(idName string, selects ...string) *_GoodsMgr {
 		}
 
 		newSelects := make([]string, 0, len(selects))
-		for k, _ := range selectMap {
+		for k := range selectMap {
 			newSelects = append(newSelects, k)
 		}
 

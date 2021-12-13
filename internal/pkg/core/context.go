@@ -49,12 +49,12 @@ var _ Context = (*context)(nil)
 
 // Context 封装 gin.Context
 type Context interface {
-	// ShouldBindForm 同时反序列化 querystring 和 postform;
-	// 当 querystring 和 postform 存在相同字段时，postform 优先使用。
+	// ShouldBindForm 同时反序列化 querystring 和 postForm;
+	// 当 querystring 和 postForm 存在相同字段时，postForm 优先使用。
 	// tag: `form:"xxx"`
 	ShouldBindForm(obj interface{}) error
 
-	// ShouldBindJSON 反序列化 postjson
+	// ShouldBindJSON 反序列化 postJson
 	// tag: `json:"xxx"`
 	ShouldBindJSON(obj interface{}) error
 
@@ -112,14 +112,14 @@ type context struct {
 	ctx *gin.Context
 }
 
-// ShouldBindForm 同时反序列化querystring和postform;
-// 当querystring和postform存在相同字段时，postform优先使用。
+// ShouldBindForm 同时反序列化 querystring 和 postForm;
+// 当 querystring 和 postForm 存在相同字段时，postForm 优先使用。
 // tag: `form:"xxx"`
 func (c *context) ShouldBindForm(obj interface{}) error {
 	return c.ctx.ShouldBindWith(obj, binding.Form)
 }
 
-// ShouldBindJSON 反序列化postjson
+// ShouldBindJSON 反序列化postJson
 // tag: `json:"xxx"`
 func (c *context) ShouldBindJSON(obj interface{}) error {
 	return c.ctx.ShouldBindWith(obj, binding.JSON)
@@ -175,7 +175,7 @@ func (c *context) AbortWithError(err error) {
 		if v, ok := err.(response.Error); ok {
 			errResp = v
 		} else {
-			errResp.WithErr(err)
+			_ = errResp.WithErr(err)
 		}
 
 		if errResp.GetErr() != nil {

@@ -94,16 +94,16 @@ func NewRSAString(keyLength int) (string, string, error) {
 	}
 
 	bufPub := make([]byte, 1024*5)
-	pubuffer := bytes.NewBuffer(bufPub)
+	pubBuffer := bytes.NewBuffer(bufPub)
 
 	bufPri := make([]byte, 1024*5)
-	pribuffer := bytes.NewBuffer(bufPri)
+	priBuffer := bytes.NewBuffer(bufPri)
 
-	err := writeRSAKeyPair(pubuffer, pribuffer, keyLength)
+	err := writeRSAKeyPair(pubBuffer, priBuffer, keyLength)
 	if err != nil {
 		return "", "", nil
 	}
-	return pubuffer.String(), pribuffer.String(), nil
+	return pubBuffer.String(), priBuffer.String(), nil
 }
 
 // writeRSAKeyPair 生成RSA密钥对
@@ -257,11 +257,11 @@ func (r *GoRSA) PrivateDecrypt(encrypted []byte) ([]byte, error) {
 
 // PrivateDecryptWithEncoding 先用 Encoding 解码 data，再进行解密
 func (r *GoRSA) PrivateDecryptWithEncoding(data string, e Encoding) ([]byte, error) {
-	encrytData, err := e.DecodeString(data)
+	encryptData, err := e.DecodeString(data)
 	if err != nil {
 		return nil, err
 	}
-	pd, err := r.PrivateDecrypt(encrytData)
+	pd, err := r.PrivateDecrypt(encryptData)
 	if err != nil {
 		return nil, err
 	}

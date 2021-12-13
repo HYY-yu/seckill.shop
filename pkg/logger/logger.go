@@ -90,7 +90,7 @@ func WithFileRotationP(file string) Option {
 	}
 
 	return func(opt *option) {
-		opt.file = &lumberjack.Logger{ // concurrent-safed
+		opt.file = &lumberjack.Logger{ // concurrent-safety
 			Filename:   file, // 文件路径
 			MaxSize:    128,  // 单个文件最大尺寸，默认单位 M
 			MaxBackups: 300,  // 最多保留 300 个备份

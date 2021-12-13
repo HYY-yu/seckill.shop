@@ -299,8 +299,8 @@ func (a *GoAES) ecbDecrypt(ciphertext []byte) ([]byte, error) {
 
 func pkcs5Padding(ciphertext []byte, blockSize int) []byte {
 	padding := blockSize - len(ciphertext)%blockSize
-	padtext := bytes.Repeat([]byte{byte(padding)}, padding)
-	return append(ciphertext, padtext...)
+	pt := bytes.Repeat([]byte{byte(padding)}, padding)
+	return append(ciphertext, pt...)
 }
 
 func pkcs5UnPadding(origData []byte) []byte {

@@ -100,37 +100,37 @@ func NewPageFromRequestJSON(requestBody []byte) (*PageRequest, error) {
 }
 
 // checkField 检查参数是否正确
-func (self *PageRequest) checkField() {
-	if self.PageIndex == 0 {
-		self.PageIndex = 1
+func (pr *PageRequest) checkField() {
+	if pr.PageIndex == 0 {
+		pr.PageIndex = 1
 	}
 
-	if self.PageSize == 0 {
-		self.PageSize = 10
+	if pr.PageSize == 0 {
+		pr.PageSize = 10
 	}
 
-	if self.Filter == nil {
-		self.Filter = make(map[string]interface{})
+	if pr.Filter == nil {
+		pr.Filter = make(map[string]interface{})
 	}
 }
 
 // AddAllowSortField 排序字段白名单
-func (self *PageRequest) AddAllowSortField(fieldName ...string) {
-	if self.AllowFields == nil {
-		self.AllowFields = make([]string, 0)
+func (pr *PageRequest) AddAllowSortField(fieldName ...string) {
+	if pr.AllowFields == nil {
+		pr.AllowFields = make([]string, 0)
 	}
-	self.AllowFields = append(self.AllowFields, fieldName...)
+	pr.AllowFields = append(pr.AllowFields, fieldName...)
 }
 
-func (self *PageRequest) GetLimitAndOffset() (limit, offset int) {
-	return self.PageSize, Offset(self.PageIndex, self.PageSize)
+func (pr *PageRequest) GetLimitAndOffset() (limit, offset int) {
+	return pr.PageSize, Offset(pr.PageIndex, pr.PageSize)
 }
 
-func (self *PageRequest) Sort() (sort string, ok bool) {
-	if len(self.SortBy) > 0 {
+func (pr *PageRequest) Sort() (sort string, ok bool) {
+	if len(pr.SortBy) > 0 {
 		// 末尾带+表示升序（默认）
 		// 末尾带-表示降序
-		sorts := strings.Split(self.SortBy, ",")
+		sorts := strings.Split(pr.SortBy, ",")
 
 		var dbSorts []string
 		for _, v := range sorts {
@@ -149,7 +149,7 @@ func (self *PageRequest) Sort() (sort string, ok bool) {
 			}
 
 			// 是否在 AllowFields 中
-			if containString(self.AllowFields, v) {
+			if containString(pr.AllowFields, v) {
 				if desc {
 					dbSorts = append(dbSorts, v+" DESC")
 				} else {

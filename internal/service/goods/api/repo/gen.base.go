@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var globalIsRelated bool = true // 全局预加载
+var globalIsRelated = true // 全局预加载
 
 // prepare for other
 type _BaseMgr struct {

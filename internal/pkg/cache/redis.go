@@ -101,7 +101,7 @@ func (c *cacheRepo) Set(ctx context.Context, key, value string, ttl time.Duratio
 	return err
 }
 
-// Get get some key from redis
+// Get run the get command from redis
 func (c *cacheRepo) Get(ctx context.Context, key string, options ...Option) (string, error) {
 	var err error
 	ts := time.Now()

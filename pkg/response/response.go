@@ -21,8 +21,8 @@ func NewResponse(payload ...interface{}) *JsonResponse {
 	}
 }
 
+// 系统级错误码
 const (
-	// 系统级错误码
 	ServerError        = 10001
 	TooManyRequests    = 10002
 	AuthorizationError = 10003

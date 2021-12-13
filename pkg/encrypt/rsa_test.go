@@ -5,30 +5,6 @@ import (
 	"testing"
 )
 
-// func TestGoRSA_Verify(t *testing.T) {
-// 	gorsa, err := NewGoRSA([]byte(pubkey), []byte(prikey), RSAAlgorithmSignSHA1)
-// 	if err != nil {
-// 		fmt.Println(err.Error())
-// 	}
-//
-// 	gorsa.Verify("ABCED", "")
-// }
-//
-// func TestGoRSA_Sign(t *testing.T) {
-// 	gorsa, err := NewGoRSA([]byte(pubkey), []byte(prikey), RSAAlgorithmSignSHA1)
-// 	if err != nil {
-// 		fmt.Println(err.Error())
-// 		return
-// 	}
-//
-// 	s, err := gorsa.Sign("ABCED")
-// 	if err != nil {
-// 		fmt.Println(err)
-// 	}
-//
-// 	fmt.Println(s)
-// }
-
 func TestNewRSAString(t *testing.T) {
 	pub, pri, _ := NewRSAString(1024)
 	fmt.Println("pub", pub)

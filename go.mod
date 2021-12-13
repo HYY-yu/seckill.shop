@@ -24,7 +24,6 @@ require (
 	github.com/swaggo/gin-swagger v1.3.2
 	github.com/swaggo/swag v1.7.0 // indirect
 	github.com/tidwall/gjson v1.11.0
-	github.com/ugorji/go v1.1.13 // indirect
 	go.opentelemetry.io/otel v1.1.0
 	go.opentelemetry.io/otel/exporters/jaeger v1.1.0
 	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.1.0
@@ -33,7 +32,7 @@ require (
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.7.0 // indirect
 	go.uber.org/zap v1.19.1
-	golang.org/x/crypto v0.0.0-20211108221036-ceb1ce70b4fa // indirect
+	golang.org/x/crypto v0.0.0-20211108221036-ceb1ce70b4fa
 	golang.org/x/sys v0.0.0-20211113001501-0c823b97ae02 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0
