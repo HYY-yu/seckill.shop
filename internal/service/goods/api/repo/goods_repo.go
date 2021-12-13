@@ -43,6 +43,7 @@ func (obj *_GoodsMgr) ListGoods(
 			return db.Where(model.GoodsColumns.ID+" = ?", i)
 		}).
 		sort(sort, "id desc").
+		Where(model.GoodsColumns.DeleteTime + " = 0").
 		Limit(limit).
 		Offset(offset).
 		Find(&result).Error
@@ -59,6 +60,7 @@ func (obj *_GoodsMgr) CountGoods(
 		addWhere(filter[model.GoodsColumns.ID], util.IsZero, func(db *gorm.DB, i interface{}) *gorm.DB {
 			return db.Where(model.GoodsColumns.ID+" = ?", i)
 		}).
+		Where(model.GoodsColumns.DeleteTime + " = 0").
 		Count(&count).Error
 	return
 }
