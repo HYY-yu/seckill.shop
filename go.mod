@@ -3,6 +3,7 @@ module github.com/HYY-yu/seckill
 go 1.16
 
 require (
+	github.com/HYY-yu/werror v1.0.0
 	github.com/VividCortex/mysqlerr v1.0.0
 	github.com/fsnotify/fsnotify v1.5.1
 	github.com/gin-contrib/pprof v1.3.0
@@ -15,7 +16,6 @@ require (
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/wire v0.5.0
 	github.com/leodido/go-urn v1.2.1 // indirect
-	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.11.0
 	github.com/rs/cors v1.8.0
 	github.com/spf13/cast v1.4.1
