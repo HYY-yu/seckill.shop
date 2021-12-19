@@ -18,7 +18,7 @@ func main() {
 	config.InitConfig()
 	lp := findLogConfigOption()
 
-	l, err := logger.NewJSONLogger(lp...)
+	l, err := logger.New(lp...)
 	if err != nil {
 		panic(err)
 	}

@@ -115,8 +115,8 @@ func WithDisableConsole() Option {
 	}
 }
 
-// NewJSONLogger return a json-encoder zap logger,
-func NewJSONLogger(opts ...Option) (*zap.Logger, error) {
+// New return a json-encoder zap logger,
+func New(opts ...Option) (*zap.Logger, error) {
 	opt := &option{level: DefaultLevel, fields: make(map[string]string)}
 	for _, f := range opts {
 		f(opt)
@@ -145,6 +145,7 @@ func NewJSONLogger(opts ...Option) (*zap.Logger, error) {
 	}
 
 	jsonEncoder := zapcore.NewJSONEncoder(encoderConfig)
+	consoleEncoder := zapcore.NewConsoleEncoder(encoderConfig)
 
 	// lowPriority usd by info\debug\warn
 	lowPriority := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
@@ -163,11 +164,11 @@ func NewJSONLogger(opts ...Option) (*zap.Logger, error) {
 
 	if !opt.disableConsole {
 		core = zapcore.NewTee(
-			zapcore.NewCore(jsonEncoder,
+			zapcore.NewCore(consoleEncoder,
 				zapcore.NewMultiWriteSyncer(stdout),
 				lowPriority,
 			),
-			zapcore.NewCore(jsonEncoder,
+			zapcore.NewCore(consoleEncoder,
 				zapcore.NewMultiWriteSyncer(stderr),
 				highPriority,
 			),

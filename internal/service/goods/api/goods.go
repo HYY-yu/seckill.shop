@@ -1,6 +1,8 @@
 package api
 
 import (
+	"errors"
+
 	"go.opentelemetry.io/otel/sdk/trace"
 	"go.uber.org/zap"
 
@@ -13,7 +15,6 @@ import (
 	"github.com/HYY-yu/seckill/internal/pkg/core"
 	"github.com/HYY-yu/seckill/internal/pkg/db"
 	"github.com/HYY-yu/seckill/pkg/jaeger"
-	"github.com/HYY-yu/seckill/pkg/werror"
 )
 
 type Controllers struct {
@@ -39,7 +40,7 @@ type Server struct {
 
 func NewApiServer(logger *zap.Logger) (*Server, error) {
 	if logger == nil {
-		return nil, werror.New("logger required")
+		return nil, errors.New("logger required")
 	}
 	s := &Server{}
 	s.Logger = logger

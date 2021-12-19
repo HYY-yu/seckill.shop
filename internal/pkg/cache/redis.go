@@ -5,11 +5,11 @@ import (
 	"time"
 
 	"github.com/go-redis/redis/v8"
+	"github.com/pkg/errors"
 
 	"github.com/HYY-yu/seckill/internal/service/goods/config"
 
 	"github.com/HYY-yu/seckill/pkg/time_parse"
-	"github.com/HYY-yu/seckill/pkg/werror"
 )
 
 type Option func(*option)
@@ -67,7 +67,7 @@ func redisConnect() (*redis.Client, error) {
 
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 	if err := client.Ping(ctx).Err(); err != nil {
-		return nil, werror.Wrap(err, "ping redis err")
+		return nil, errors.Wrap(err, "ping redis err")
 	}
 
 	return client, nil
@@ -96,7 +96,7 @@ func (c *cacheRepo) Set(ctx context.Context, key, value string, ttl time.Duratio
 	}
 
 	if err = c.client.Set(ctx, key, value, ttl).Err(); err != nil {
-		err = werror.Wrapf(err, "redis set key: %s err", key)
+		err = errors.Wrapf(err, "redis set key: %s err", key)
 	}
 	return err
 }
@@ -124,7 +124,7 @@ func (c *cacheRepo) Get(ctx context.Context, key string, options ...Option) (str
 
 	value, err := c.client.Get(ctx, key).Result()
 	if err != nil {
-		err = werror.Wrapf(err, "redis get key: %s err", key)
+		err = errors.Wrapf(err, "redis get key: %s err", key)
 	}
 	return value, err
 }
@@ -133,7 +133,7 @@ func (c *cacheRepo) Get(ctx context.Context, key string, options ...Option) (str
 func (c *cacheRepo) TTL(ctx context.Context, key string) (time.Duration, error) {
 	ttl, err := c.client.TTL(ctx, key).Result()
 	if err != nil {
-		return -1, werror.Wrapf(err, "redis get key: %s err", key)
+		return -1, errors.Wrapf(err, "redis get key: %s err", key)
 	}
 
 	return ttl, nil
@@ -185,7 +185,7 @@ func (c *cacheRepo) Del(ctx context.Context, key string, options ...Option) bool
 
 	value, err := c.client.Del(ctx, key).Result()
 	if err != nil {
-		err = werror.Wrapf(err, "redis del key: %s err", key)
+		err = errors.Wrapf(err, "redis del key: %s err", key)
 	}
 	return value > 0
 }
@@ -212,7 +212,7 @@ func (c *cacheRepo) Incr(ctx context.Context, key string, options ...Option) int
 	}
 	value, err := c.client.Incr(ctx, key).Result()
 	if err != nil {
-		err = werror.Wrapf(err, "redis Incr key: %s err", key)
+		err = errors.Wrapf(err, "redis Incr key: %s err", key)
 	}
 	return value
 }
