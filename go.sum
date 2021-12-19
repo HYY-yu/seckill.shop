@@ -46,8 +46,8 @@ github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03
 github.com/BurntSushi/toml v0.4.1 h1:GaI7EiDXDRfa8VshkTj7Fym7ha+y8/XxIgD2okUIjLw=
 github.com/BurntSushi/toml v0.4.1/go.mod h1:CxXYINrC8qIiEnFrOxCa7Jy5BFHlXnUU2pbicEuybxQ=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
-github.com/HYY-yu/werror v1.0.0 h1:NNUyjaW3w3OjmUslsgknNuvoFhkTT3zusjq61bgYA1U=
-github.com/HYY-yu/werror v1.0.0/go.mod h1:bTIT9OZJBZYWzWk5j5sCBgxJ/iJsXTtPHXDmgm/Xkl4=
+github.com/HYY-yu/werror v1.0.1 h1:0z7gsC04VKnJGEfriQ8wYW7Sp8lmyw8ExAB/BjG8S5w=
+github.com/HYY-yu/werror v1.0.1/go.mod h1:bTIT9OZJBZYWzWk5j5sCBgxJ/iJsXTtPHXDmgm/Xkl4=
 github.com/KyleBanks/depth v1.2.1 h1:5h8fQADFrWtarTdtDudMmGsC7GPbOAu6RVB3ffsVFHc=
 github.com/KyleBanks/depth v1.2.1/go.mod h1:jzSb9d0L43HxTQfT+oSA1EEp2q+ne2uh6XgeJcm8brE=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=

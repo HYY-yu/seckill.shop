@@ -3,7 +3,7 @@ module github.com/HYY-yu/seckill
 go 1.16
 
 require (
-	github.com/HYY-yu/werror v1.0.0
+	github.com/HYY-yu/werror v1.0.1
 	github.com/VividCortex/mysqlerr v1.0.0
 	github.com/fsnotify/fsnotify v1.5.1
 	github.com/gin-contrib/pprof v1.3.0
