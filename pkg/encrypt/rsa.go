@@ -29,7 +29,6 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
-	"encoding/base64"
 	"encoding/pem"
 	"errors"
 	"io"
@@ -40,18 +39,24 @@ import (
 // RSA 加解密
 // SHA256 or SHA128
 
+type RSAKeyLen int
+
 const (
 	// RSAAlgorithmSignSHA256 RSA签名算法 SHA256
 	RSAAlgorithmSignSHA256 = crypto.SHA256
 	// RSAAlgorithmSignSHA1 RSA签名算法 SHA1
 	RSAAlgorithmSignSHA1 = crypto.SHA1
+
+	RSA1024 RSAKeyLen = 1024
+	RSA2048 RSAKeyLen = 2048
+	RSA4096 RSAKeyLen = 4096
 )
 
-// NewRSAFile 生成密钥对文件
+// GenerateRSAFile 生成密钥对文件
 // pubKeyFilename: 公钥文件名
 // priKeyFilename: 私钥文件名
 // keyLength: 密钥长度
-func NewRSAFile(pubKeyFilename, priKeyFilename string, keyLength int) error {
+func GenerateRSAFile(pubKeyFilename, priKeyFilename string, keyLength RSAKeyLen) error {
 	if pubKeyFilename == "" {
 		pubKeyFilename = "id_rsa.pub"
 	}
@@ -59,8 +64,8 @@ func NewRSAFile(pubKeyFilename, priKeyFilename string, keyLength int) error {
 		priKeyFilename = "id_rsa"
 	}
 
-	if keyLength == 0 || keyLength < 1024 {
-		keyLength = 1024
+	if keyLength == 0 {
+		keyLength = RSA1024
 	}
 
 	// 创建公钥文件
@@ -85,18 +90,18 @@ func NewRSAFile(pubKeyFilename, priKeyFilename string, keyLength int) error {
 	return nil
 }
 
-// NewRSAString 生成密钥对字符串
+// GenerateRSAString 生成密钥对字符串
 // keyLength 密钥的长度
 // 生成 公钥、私钥
-func NewRSAString(keyLength int) (string, string, error) {
+func GenerateRSAString(keyLength RSAKeyLen) (string, string, error) {
 	if keyLength == 0 || keyLength < 1024 {
 		keyLength = 1024
 	}
 
-	bufPub := make([]byte, 1024*5)
+	bufPub := make([]byte, 0, 1024*5)
 	pubBuffer := bytes.NewBuffer(bufPub)
 
-	bufPri := make([]byte, 1024*5)
+	bufPri := make([]byte, 0, 1024*5)
 	priBuffer := bytes.NewBuffer(bufPri)
 
 	err := writeRSAKeyPair(pubBuffer, priBuffer, keyLength)
@@ -107,9 +112,9 @@ func NewRSAString(keyLength int) (string, string, error) {
 }
 
 // writeRSAKeyPair 生成RSA密钥对
-func writeRSAKeyPair(publicKeyWriter, privateKeyWriter io.Writer, keyLength int) error {
+func writeRSAKeyPair(publicKeyWriter, privateKeyWriter io.Writer, keyLength RSAKeyLen) error {
 	// 生成私钥文件
-	privateKey, err := rsa.GenerateKey(rand.Reader, keyLength)
+	privateKey, err := rsa.GenerateKey(rand.Reader, int(keyLength))
 	if err != nil {
 		return err
 	}
@@ -149,9 +154,9 @@ func writeRSAKeyPair(publicKeyWriter, privateKeyWriter io.Writer, keyLength int)
 	return nil
 }
 
-// ReadRSAKeyPairFromFile 从文件读取RSA密钥对
+// readRSAKeyPairFromFile 从文件读取RSA密钥对
 // pubKeyFilename: 公钥文件名称   priKeyFilename: 私钥文件名
-func ReadRSAKeyPairFromFile(pubKeyFilename, priKeyFilename string) ([]byte, []byte, error) {
+func readRSAKeyPairFromFile(pubKeyFilename, priKeyFilename string) ([]byte, []byte, error) {
 	pub, err := ioutil.ReadFile(pubKeyFilename)
 	if err != nil {
 		return nil, nil, err
@@ -166,13 +171,12 @@ func ReadRSAKeyPairFromFile(pubKeyFilename, priKeyFilename string) ([]byte, []by
 
 // GoRSA RSA加密解密
 type GoRSA struct {
-	PublicKey        *rsa.PublicKey
-	PrivateKey       *rsa.PrivateKey
-	RSAAlgorithmSign crypto.Hash
+	PublicKey  *rsa.PublicKey
+	PrivateKey *rsa.PrivateKey
 }
 
 // NewGoRSA 初始化 GORSA ,读取公钥、私钥，指定Hash算法
-func NewGoRSA(publicKey, privateKey []byte, sign crypto.Hash) (*GoRSA, error) {
+func NewGoRSA(publicKey, privateKey []byte) (*GoRSA, error) {
 	block, _ := pem.Decode(publicKey)
 	if block == nil {
 		return nil, errors.New("public key error")
@@ -197,21 +201,20 @@ func NewGoRSA(publicKey, privateKey []byte, sign crypto.Hash) (*GoRSA, error) {
 	pri, ok := priInterface.(*rsa.PrivateKey)
 	if ok {
 		return &GoRSA{
-			PublicKey:        pub,
-			PrivateKey:       pri,
-			RSAAlgorithmSign: sign,
+			PublicKey:  pub,
+			PrivateKey: pri,
 		}, nil
 	}
 	return nil, errors.New("private key not supported")
 }
 
 // NewGoRSAFromFile 初始化 GoRSA 从文件中加载秘钥
-func NewGoRSAFromFile(pubKeyFilename, priKeyFilename string, sign crypto.Hash) (*GoRSA, error) {
-	publicKey, privateKey, err := ReadRSAKeyPairFromFile(pubKeyFilename, priKeyFilename)
+func NewGoRSAFromFile(pubKeyFilename, priKeyFilename string) (*GoRSA, error) {
+	publicKey, privateKey, err := readRSAKeyPairFromFile(pubKeyFilename, priKeyFilename)
 	if err != nil {
 		return nil, err
 	}
-	return NewGoRSA(publicKey, privateKey, sign)
+	return NewGoRSA(publicKey, privateKey)
 }
 
 // PublicEncrypt 公钥加密
@@ -270,27 +273,27 @@ func (r *GoRSA) PrivateDecryptWithEncoding(data string, e Encoding) ([]byte, err
 }
 
 // Sign 利用私钥对数据进行签名
-func (r *GoRSA) Sign(data string) (string, error) {
-	h := r.RSAAlgorithmSign.New()
+func (r *GoRSA) Sign(signAlgorithm crypto.Hash, encoder Encoding, data string) (string, error) {
+	h := signAlgorithm.New()
 	h.Write([]byte(data))
 	hashed := h.Sum(nil)
-	sign, err := rsa.SignPKCS1v15(rand.Reader, r.PrivateKey, r.RSAAlgorithmSign, hashed)
+	sign, err := rsa.SignPKCS1v15(rand.Reader, r.PrivateKey, signAlgorithm, hashed)
 	if err != nil {
 		return "", err
 	}
-	return base64.StdEncoding.EncodeToString(sign), err
+	return encoder.EncodeToString(sign), err
 }
 
 // Verify 利用公钥验证数据签名
-func (r *GoRSA) Verify(data string, sign string) error {
-	h := r.RSAAlgorithmSign.New()
+func (r *GoRSA) Verify(signAlgorithm crypto.Hash, decoder Encoding, data string, sign string) error {
+	h := signAlgorithm.New()
 	h.Write([]byte(data))
 	hashed := h.Sum(nil)
-	decodedSign, err := base64.StdEncoding.DecodeString(sign)
+	decodedSign, err := decoder.DecodeString(sign)
 	if err != nil {
 		return err
 	}
-	return rsa.VerifyPKCS1v15(r.PublicKey, r.RSAAlgorithmSign, hashed, decodedSign)
+	return rsa.VerifyPKCS1v15(r.PublicKey, signAlgorithm, hashed, decodedSign)
 }
 
 func split(buf []byte, lim int) [][]byte {

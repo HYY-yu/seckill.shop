@@ -42,9 +42,11 @@ const (
 	// CBC 加密模式
 	// 明文不加密出唯一密文
 	// 只能串行化，速度慢
+	// 密文长
 	CBC AESModel = 2
 	// CTR 加密模式
 	// 流加密，速度快，无填充
+	// 密文较短
 	CTR AESModel = 3
 )
 
@@ -223,22 +225,22 @@ func (a *GoAES) ctrEncrypt(plaintext []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	ciphertext := make([]byte, 0)
+	ciphertext := make([]byte, len(plaintext))
 
 	stream := cipher.NewCTR(block, a.iv)
-	stream.XORKeyStream(ciphertext[aes.BlockSize:], plaintext)
+	stream.XORKeyStream(ciphertext, plaintext)
 	return ciphertext, nil
 }
 
 func (a *GoAES) ctrDecrypt(ciphertext []byte) ([]byte, error) {
 	block, err := aes.NewCipher(a.key)
 	if err != nil {
-		panic(err.Error())
+		return nil, err
 	}
 
-	plaintext := make([]byte, 0)
+	plaintext := make([]byte, len(ciphertext))
 	stream := cipher.NewCTR(block, a.iv)
-	stream.XORKeyStream(plaintext, ciphertext[aes.BlockSize:])
+	stream.XORKeyStream(plaintext, ciphertext)
 	return plaintext, nil
 }
 
@@ -247,8 +249,8 @@ func (a *GoAES) cbcEncrypt(plaintext []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	plaintext = pkcs5Padding(plaintext, block.BlockSize())
-	ciphertext := make([]byte, 0)
+	plaintext = pkcs5Padding(plaintext, aes.BlockSize)
+	ciphertext := make([]byte, len(plaintext))
 
 	cipher.NewCBCEncrypter(block, a.iv).CryptBlocks(ciphertext, plaintext)
 	return ciphertext, nil
