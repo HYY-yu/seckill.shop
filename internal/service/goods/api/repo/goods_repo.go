@@ -42,7 +42,7 @@ func (obj *_GoodsMgr) ListGoods(
 		addWhere(filter[model.GoodsColumns.ID], util.IsNotZero, func(db *gorm.DB, i interface{}) *gorm.DB {
 			return db.Where(model.GoodsColumns.ID+" = ?", i)
 		}).
-		sort(sort, "id desc").
+		sort(sort, model.GoodsColumns.ID+" desc").
 		Where(model.GoodsColumns.DeleteTime + " = 0").
 		Limit(limit).
 		Offset(offset).

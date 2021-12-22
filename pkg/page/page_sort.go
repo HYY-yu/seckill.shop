@@ -67,7 +67,7 @@ func NewPageFromRequest(rForm url.Values) *PageRequest {
 		if len(v) > 0 {
 			vv := v[0]
 			switch k {
-			case "pageIndex", "pageSize", "sort":
+			case "page_index", "page_size", "sort":
 			default:
 				req.Filter[k] = vv
 			}
