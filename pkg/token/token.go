@@ -9,6 +9,9 @@ import (
 
 var _ Token = (*token)(nil)
 
+// Token 实现 接口令牌 的封装
+// JWT 令牌 （代替 Session）
+// Sign 签名防篡改
 type Token interface {
 	// i 为了避免被其他包实现
 	i()
@@ -19,8 +22,9 @@ type Token interface {
 	// JwtParse 解密
 	JwtParse(tokenString string) (*claims, error)
 
-	// UrlSign URL 签名方式，不支持解密
-	UrlSign(path string, method string, params url.Values) (tokenString string, err error)
+	// UrlSign URL 签名
+	// 防参数篡改，防重放攻击
+	UrlSign(timestamp int64, path string, method string, params url.Values) (tokenString string, err error)
 }
 
 type token struct {
@@ -33,6 +37,7 @@ type claims struct {
 	jwt.StandardClaims
 }
 
+// New 根据 secret 生成后续的签名
 func New(secret string) Token {
 	return &token{
 		secret: secret,

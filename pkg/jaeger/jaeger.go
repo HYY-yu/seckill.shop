@@ -23,32 +23,25 @@ func InitJaeger(serviceName, endpoint string) (tp *trace.TracerProvider, err err
 	if err != nil {
 		return nil, err
 	}
-	tp = trace.NewTracerProvider(
-		// Always be sure to batch in production.
-		trace.WithBatcher(exp),
-		// Record information about this application in a Resource.
-		trace.WithResource(resource.NewWithAttributes(
-			semconv.SchemaURL,
-			semconv.ServiceNameKey.String(serviceName),
-		)),
-	)
-	otel.SetTracerProvider(tp)
-	defaultTextMapPropagator := propagation.NewCompositeTextMapPropagator(
-		propagation.TraceContext{},
-		propagation.Baggage{},
-	)
-	otel.SetTextMapPropagator(defaultTextMapPropagator)
-	return tp, nil
+
+	return initOTELTracer(exp, serviceName)
 }
 
+// InitStdOutForDevelopment initializes and registers stdout to global TracerProvider.
+// It is used in local development, Don't use it online.
 func InitStdOutForDevelopment(serviceName, endpoint string) (tp *trace.TracerProvider, err error) {
 	exp, err := stdout.New(stdout.WithPrettyPrint())
 	if err != nil {
 		return nil, err
 	}
+
+	return initOTELTracer(exp, serviceName)
+}
+
+func initOTELTracer(exporter trace.SpanExporter, serviceName string) (tp *trace.TracerProvider, err error) {
 	tp = trace.NewTracerProvider(
 		// Always be sure to batch in production.
-		trace.WithBatcher(exp),
+		trace.WithBatcher(exporter),
 		// Record information about this application in a Resource.
 		trace.WithResource(resource.NewWithAttributes(
 			semconv.SchemaURL,

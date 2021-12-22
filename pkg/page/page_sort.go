@@ -10,17 +10,21 @@ import (
 	"github.com/tidwall/gjson"
 )
 
+// package page
 // 分页 排序 帮助函数
 
+// Page 系统分页默认结构
 type Page struct {
 	TotalCount int64       `json:"count"`
 	List       interface{} `json:"list"`
 }
 
+// Offset 计算真实偏移量
 func Offset(pageNo int, pageSize int) int {
 	return (pageNo - 1) * pageSize
 }
 
+// NewPage 新建一个 Page
 func NewPage(count int64, list interface{}) *Page {
 	page := Page{
 		TotalCount: count,
@@ -29,7 +33,7 @@ func NewPage(count int64, list interface{}) *Page {
 	return &page
 }
 
-// PageRequest 分页加筛选
+// PageRequest 封装分页加筛选请求
 type PageRequest struct {
 	PageIndex   int                    `form:"page_index" json:"page_index"`
 	PageSize    int                    `form:"page_size" json:"page_size"`
@@ -38,6 +42,7 @@ type PageRequest struct {
 	AllowFields []string               `form:"-" json:"-"`
 }
 
+// NewPageRequest 新建一个 PageRequest
 func NewPageRequest(pi, ps int, sort string, filter map[string]interface{}) *PageRequest {
 	pr := &PageRequest{
 		PageIndex: pi,
@@ -48,6 +53,8 @@ func NewPageRequest(pi, ps int, sort string, filter map[string]interface{}) *Pag
 	return pr
 }
 
+// NewPageFromRequest 从 http.Request 中解析参数
+// 使用 request.Form 前，需要 request.ParseForm()
 func NewPageFromRequest(rForm url.Values) *PageRequest {
 	pi := cast.ToInt(rForm.Get("page_index"))
 	ps := cast.ToInt(rForm.Get("page_size"))
@@ -70,6 +77,7 @@ func NewPageFromRequest(rForm url.Values) *PageRequest {
 	return req
 }
 
+// NewPageFromRequestJSON 从请求体 JSON 中解析参数
 func NewPageFromRequestJSON(requestBody []byte) (*PageRequest, error) {
 	var req PageRequest
 
@@ -122,10 +130,15 @@ func (pr *PageRequest) AddAllowSortField(fieldName ...string) {
 	pr.AllowFields = append(pr.AllowFields, fieldName...)
 }
 
+// GetLimitAndOffset 获取 limit offset 用于数据库分页
 func (pr *PageRequest) GetLimitAndOffset() (limit, offset int) {
 	return pr.PageSize, Offset(pr.PageIndex, pr.PageSize)
 }
 
+// Sort 获取 SQL 的 Order By 子句
+// create_time+ -> create_time
+// create_time- -> create_time DESC
+// id+,create_time- -> id,create_time DESC
 func (pr *PageRequest) Sort() (sort string, ok bool) {
 	if len(pr.SortBy) > 0 {
 		// 末尾带+表示升序（默认）

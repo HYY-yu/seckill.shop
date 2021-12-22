@@ -1,7 +1,6 @@
 package time_parse
 
 import (
-	"math"
 	"net/http"
 	"time"
 )
@@ -20,17 +19,6 @@ func init() {
 	}
 }
 
-// RFC3339ToCSTLayout convert rfc3339 value to china standard time layout
-// 2020-11-08T08:18:46+08:00 => 2020-11-08 08:18:46
-func RFC3339ToCSTLayout(value string) (string, error) {
-	ts, err := time.Parse(time.RFC3339, value)
-	if err != nil {
-		return "", err
-	}
-
-	return ts.In(cst).Format(CSTLayout), nil
-}
-
 // CSTLayoutString 格式化时间
 // 返回 "2006-01-02 15:04:05" 格式的时间
 func CSTLayoutString() string {
@@ -43,6 +31,17 @@ func ParseCSTInLocation(date string) (time.Time, error) {
 	return time.ParseInLocation(CSTLayout, date, cst)
 }
 
+// RFC3339ToCSTLayout convert rfc3339 value to china standard time layout
+// 2020-11-08T08:18:46+08:00 => 2020-11-08 08:18:46
+func RFC3339ToCSTLayout(value string) (string, error) {
+	ts, err := time.Parse(time.RFC3339, value)
+	if err != nil {
+		return "", err
+	}
+
+	return ts.In(cst).Format(CSTLayout), nil
+}
+
 // CSTLayoutStringToUnix 返回 unix 时间戳
 // 2020-01-24 21:11:11 => 1579871471
 func CSTLayoutStringToUnix(cstLayoutString string) (int64, error) {
@@ -51,6 +50,13 @@ func CSTLayoutStringToUnix(cstLayoutString string) (int64, error) {
 		return 0, err
 	}
 	return stamp.Unix(), nil
+}
+
+// UnixToCSTLayoutString 返回 CSTLayoutString
+// 1579871471 => 2020-01-24 21:11:11
+func UnixToCSTLayoutString(value int64) (string, error) {
+	ts := time.Unix(value, 0)
+	return ts.In(cst).Format(CSTLayout), nil
 }
 
 // GMTLayoutString 格式化时间
@@ -62,9 +68,4 @@ func GMTLayoutString() string {
 // ParseGMTInLocation 格式化时间
 func ParseGMTInLocation(date string) (time.Time, error) {
 	return time.ParseInLocation(http.TimeFormat, date, cst)
-}
-
-// SubInLocation 计算时间差
-func SubInLocation(ts time.Time) float64 {
-	return math.Abs(time.Now().In(cst).Sub(ts).Seconds())
 }

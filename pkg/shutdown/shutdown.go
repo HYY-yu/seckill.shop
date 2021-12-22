@@ -30,6 +30,7 @@ func NewHook() Hook {
 	return hook.WithSignals(syscall.SIGINT, syscall.SIGTERM)
 }
 
+// WithSignals add more signals into hook
 func (h *hook) WithSignals(signals ...syscall.Signal) Hook {
 	for _, s := range signals {
 		signal.Notify(h.ctx, s)
@@ -38,6 +39,7 @@ func (h *hook) WithSignals(signals ...syscall.Signal) Hook {
 	return h
 }
 
+// Close register shutdown handles
 func (h *hook) Close(funcs ...func()) {
 	select {
 	case <-h.ctx:

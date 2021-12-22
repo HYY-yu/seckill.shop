@@ -31,6 +31,7 @@ type err struct {
 	Err          error  // 错误信息
 }
 
+// NewError 新建一个 Error
 func NewError(httpCode, businessCode int, msg string) Error {
 	return &err{
 		HttpCode:     httpCode,
@@ -39,6 +40,7 @@ func NewError(httpCode, businessCode int, msg string) Error {
 	}
 }
 
+// NewErrorWithStatusOk 新建 Error，httpCode 默认为 http.StatusOK
 func NewErrorWithStatusOk(businessCode int, msg string) Error {
 	return &err{
 		HttpCode:     http.StatusOK,
@@ -47,6 +49,7 @@ func NewErrorWithStatusOk(businessCode int, msg string) Error {
 	}
 }
 
+// NewErrorWithStatusOkAutoMsg 新建Error，httpCode 默认为 http.StatusOK，msg自动从错误码注册表中获取
 func NewErrorWithStatusOkAutoMsg(businessCode int) Error {
 	return &err{
 		HttpCode:     http.StatusOK,
@@ -55,6 +58,7 @@ func NewErrorWithStatusOkAutoMsg(businessCode int) Error {
 	}
 }
 
+// NewErrorAutoMsg 新建Error，msg自动从错误码注册表中获取
 func NewErrorAutoMsg(httpCode, businessCode int) Error {
 	return &err{
 		HttpCode:     httpCode,
@@ -67,23 +71,28 @@ func (e *err) Error() string {
 	return e.ToString()
 }
 
+// WithErr 封装真实 err
 func (e *err) WithErr(err error) Error {
 	e.Err = err
 	return e
 }
 
+// GetHttpCode 获取 HttpCode
 func (e *err) GetHttpCode() int {
 	return e.HttpCode
 }
 
+// GetBusinessCode 获取 BusinessCode
 func (e *err) GetBusinessCode() int {
 	return e.BusinessCode
 }
 
+// GetMsg 获取 Message
 func (e *err) GetMsg() string {
 	return e.Message
 }
 
+// GetErr 获取 Err
 func (e *err) GetErr() error {
 	return e.Err
 }

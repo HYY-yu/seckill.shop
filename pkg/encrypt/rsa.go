@@ -171,6 +171,7 @@ type GoRSA struct {
 	RSAAlgorithmSign crypto.Hash
 }
 
+// NewGoRSA 初始化 GORSA ,读取公钥、私钥，指定Hash算法
 func NewGoRSA(publicKey, privateKey []byte, sign crypto.Hash) (*GoRSA, error) {
 	block, _ := pem.Decode(publicKey)
 	if block == nil {

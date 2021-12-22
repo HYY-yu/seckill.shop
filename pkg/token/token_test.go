@@ -9,7 +9,7 @@ import (
 const secret = "i1ydX9RtHyuJTrw7frcu"
 
 func TestJwtSign(t *testing.T) {
-	tokenString, err := New(secret).JwtSign(123456789, "xinliangnote", 24*time.Hour)
+	tokenString, err := New(secret).JwtSign(123456789, "test_user", 24*time.Hour)
 	if err != nil {
 		t.Error("sign error", err)
 		return
@@ -18,7 +18,7 @@ func TestJwtSign(t *testing.T) {
 }
 
 func TestJwtParse(t *testing.T) {
-	tokenString := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOjEyMzQ1Njc4OSwidXNlcm5hbWUiOiJ4aW5saWFuZyIsImV4cCI6MTYwOTQ2NzcwNCwiaWF0IjoxNjA5MzgxMzA0LCJpc3MiOiJnby1naW4tYXBpIiwibmJmIjoxNjA5MzgxMzA0fQ.hccv8F713WpKcwiSldBrFLZz_2SZzOTPedPi-8ps7M4"
+	tokenString := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySUQiOjEyMzQ1Njc4OSwiVXNlck5hbWUiOiJ0ZXN0X3VzZXIiLCJleHAiOjE2NDAyMjY4OTYsImlhdCI6MTY0MDE0MDQ5NiwibmJmIjoxNjQwMTQwNDk2fQ.RgmaR9ybLgRg1JwDigo6NXiTt8-x3H_3r7Zfoeq6A-0"
 	user, err := New(secret).JwtParse(tokenString)
 	if err != nil {
 		t.Error("parse error", err)
@@ -28,7 +28,6 @@ func TestJwtParse(t *testing.T) {
 }
 
 func TestUrlSign(t *testing.T) {
-
 	urlPath := "/echo"
 	method := "post"
 	params := url.Values{}
@@ -36,7 +35,7 @@ func TestUrlSign(t *testing.T) {
 	params.Add("d", "d1")
 	params.Add("c", "c1")
 
-	tokenString, err := New(secret).UrlSign(urlPath, method, params)
+	tokenString, err := New(secret).UrlSign(time.Now().Unix(), urlPath, method, params)
 	if err != nil {
 		t.Error("sign error", err)
 		return

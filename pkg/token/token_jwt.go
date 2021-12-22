@@ -6,6 +6,7 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
+// JwtSign 生成一个 expireDuration 后过期的 JWT 令牌
 func (t *token) JwtSign(userId int64, userName string, expireDuration time.Duration) (tokenString string, err error) {
 	// The token content.
 	// iss: （Issuer）签发者
@@ -28,6 +29,7 @@ func (t *token) JwtSign(userId int64, userName string, expireDuration time.Durat
 	return
 }
 
+// JwtParse 从 JWT 中解密数据
 func (t *token) JwtParse(tokenString string) (*claims, error) {
 	tokenClaims, err := jwt.ParseWithClaims(tokenString, &claims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(t.secret), nil
