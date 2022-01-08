@@ -10,7 +10,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 
-	"github.com/HYY-yu/seckill/internal/service/goods/config"
+	"github.com/HYY-yu/seckill.shop/internal/service/goods/config"
 )
 
 var _ Repo = (*dbRepo)(nil)

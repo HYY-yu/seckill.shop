@@ -1,4 +1,4 @@
-module github.com/HYY-yu/seckill
+module github.com/HYY-yu/seckill.shop
 
 go 1.16
 

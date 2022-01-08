@@ -12,7 +12,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/HYY-yu/seckill.pkg/pkg/response"
-	"github.com/HYY-yu/seckill/internal/service/goods/config"
+	"github.com/HYY-yu/seckill.shop/internal/service/goods/config"
 )
 
 // RecordMetrics 记录prometheus指标用

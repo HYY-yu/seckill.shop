@@ -6,11 +6,11 @@
 package api
 
 import (
-	"github.com/HYY-yu/seckill/internal/pkg/cache"
-	"github.com/HYY-yu/seckill/internal/pkg/db"
-	"github.com/HYY-yu/seckill/internal/service/goods/api/controller"
-	"github.com/HYY-yu/seckill/internal/service/goods/api/repo"
-	"github.com/HYY-yu/seckill/internal/service/goods/api/svc"
+	"github.com/HYY-yu/seckill.shop/internal/pkg/cache"
+	"github.com/HYY-yu/seckill.shop/internal/pkg/db"
+	"github.com/HYY-yu/seckill.shop/internal/service/goods/api/controller"
+	"github.com/HYY-yu/seckill.shop/internal/service/goods/api/repo"
+	"github.com/HYY-yu/seckill.shop/internal/service/goods/api/svc"
 )
 
 // Injectors from wire.go:

@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/HYY-yu/seckill/internal/service/goods/config"
+	"github.com/HYY-yu/seckill.shop/internal/service/goods/config"
 	"github.com/HYY-yu/werror"
 	"github.com/go-redis/redis/v8"
 

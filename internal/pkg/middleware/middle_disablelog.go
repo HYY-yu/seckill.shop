@@ -1,6 +1,6 @@
 package middleware
 
-import "github.com/HYY-yu/seckill/internal/pkg/core"
+import "github.com/HYY-yu/seckill.shop/internal/pkg/core"
 
 func (m *middleware) DisableLog() core.HandlerFunc {
 	return func(c core.Context) {

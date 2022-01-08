@@ -4,7 +4,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/HYY-yu/seckill.pkg/pkg/response"
-	"github.com/HYY-yu/seckill/internal/pkg/core"
+	"github.com/HYY-yu/seckill.shop/internal/pkg/core"
 )
 
 var _ Middleware = (*middleware)(nil)
