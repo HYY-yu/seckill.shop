@@ -13,7 +13,7 @@ import (
 	"github.com/spf13/cast"
 	"go.uber.org/zap"
 
-	"github.com/HYY-yu/seckill/pkg/response"
+	"github.com/HYY-yu/seckill.pkg/pkg/response"
 )
 
 type HandlerFunc func(c Context)

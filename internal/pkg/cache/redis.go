@@ -8,7 +8,7 @@ import (
 	"github.com/HYY-yu/werror"
 	"github.com/go-redis/redis/v8"
 
-	"github.com/HYY-yu/seckill/pkg/time_parse"
+	"github.com/HYY-yu/seckill.pkg/pkg/time_parse"
 )
 
 type Option func(*option)

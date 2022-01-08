@@ -6,8 +6,8 @@ import (
 	"github.com/spf13/cast"
 	"gorm.io/gorm"
 
+	"github.com/HYY-yu/seckill.pkg/pkg/util"
 	"github.com/HYY-yu/seckill/internal/service/goods/model"
-	"github.com/HYY-yu/seckill/pkg/util"
 )
 
 type GoodsRepo interface {

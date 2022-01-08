@@ -18,7 +18,7 @@ import (
 
 	"github.com/HYY-yu/seckill/internal/service/goods/config"
 
-	"github.com/HYY-yu/seckill/pkg/response"
+	"github.com/HYY-yu/seckill.pkg/pkg/response"
 )
 
 const _MaxBurstSize = 100000

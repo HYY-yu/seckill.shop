@@ -4,10 +4,10 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/HYY-yu/seckill.pkg/pkg/response"
+	"github.com/HYY-yu/seckill.pkg/pkg/token"
 	"github.com/HYY-yu/seckill/internal/pkg/core"
 	"github.com/HYY-yu/seckill/internal/service/goods/config"
-	"github.com/HYY-yu/seckill/pkg/response"
-	"github.com/HYY-yu/seckill/pkg/token"
 )
 
 func (m *middleware) Jwt(ctx core.Context) (userId int64, userName string, err response.Error) {

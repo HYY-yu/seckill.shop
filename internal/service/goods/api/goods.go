@@ -6,15 +6,15 @@ import (
 	"go.opentelemetry.io/otel/sdk/trace"
 	"go.uber.org/zap"
 
+	"github.com/HYY-yu/seckill.pkg/pkg/metrics"
 	"github.com/HYY-yu/seckill/internal/pkg/middleware"
 	"github.com/HYY-yu/seckill/internal/service/goods/api/controller"
 	"github.com/HYY-yu/seckill/internal/service/goods/config"
-	"github.com/HYY-yu/seckill/pkg/metrics"
 
+	"github.com/HYY-yu/seckill.pkg/pkg/jaeger"
 	"github.com/HYY-yu/seckill/internal/pkg/cache"
 	"github.com/HYY-yu/seckill/internal/pkg/core"
 	"github.com/HYY-yu/seckill/internal/pkg/db"
-	"github.com/HYY-yu/seckill/pkg/jaeger"
 )
 
 type Controllers struct {

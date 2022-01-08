@@ -11,8 +11,8 @@ import (
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 
+	"github.com/HYY-yu/seckill.pkg/pkg/response"
 	"github.com/HYY-yu/seckill/internal/service/goods/config"
-	"github.com/HYY-yu/seckill/pkg/response"
 )
 
 // RecordMetrics 记录prometheus指标用

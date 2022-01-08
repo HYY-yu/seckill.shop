@@ -10,8 +10,8 @@ import (
 	"github.com/HYY-yu/seckill/internal/service/goods/api"
 	"github.com/HYY-yu/seckill/internal/service/goods/config"
 
-	"github.com/HYY-yu/seckill/pkg/logger"
-	"github.com/HYY-yu/seckill/pkg/shutdown"
+	"github.com/HYY-yu/seckill.pkg/pkg/logger"
+	"github.com/HYY-yu/seckill.pkg/pkg/shutdown"
 )
 
 func main() {
