@@ -14,5 +14,6 @@ WORKDIR /app
 # Copy the controller binary from the context into our
 # container image
 COPY sk_shop /app/sk_shop
+COPY ./config/cfg.toml /app/cfg.toml
 
 ENTRYPOINT ["/app/sk_shop"]

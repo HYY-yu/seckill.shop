@@ -57,6 +57,7 @@ func InitConfig() {
 	viper.SetConfigName("cfg")
 	viper.SetConfigType("toml")
 	viper.AddConfigPath("./internal/service/goods/config")
+	viper.AddConfigPath(".")
 
 	if err := viper.ReadInConfig(); err != nil {
 		panic(err)

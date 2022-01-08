@@ -32,12 +32,10 @@ fi
 #
 # Create image locally
 # docker pull ccr.ccs.tencentyun.com/seckill_srv/seckill-shop:[tag]
-cd $TRAVIS_BUILD_DIR/internal/service/goods/cmd
-CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -o sk_shop main.go
+cd $TRAVIS_BUILD_DIR/internal/service/goods
+CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -o sk_shop ./cmd/main.go
 docker build --rm -f $TRAVIS_BUILD_DIR/deploy/Dockerfile -t $dockerName:$tag .
 docker tag $dockerName:$tag $dockerName:latest
-
-
 
 #
 # Return tag
