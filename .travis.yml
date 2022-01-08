@@ -1,0 +1,24 @@
+language: go
+dist: xenial
+
+cache:
+  directories:
+    - $TRAVIS_HOME/.cache
+
+go:
+  - 1.16
+
+install:
+  - go get -d -t ./...
+
+script:
+  - go test -v  ./...
+  - go build ./inernal/service/goods/cmd/main.go
+  - ./deploy/buildImage.sh
+
+deploy:
+  skip_cleanup: true
+  provider: script
+  script:  bash ./deploy/deploy.sh
+  on:
+    tags: true
