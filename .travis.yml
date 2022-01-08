@@ -13,7 +13,7 @@ install:
 
 script:
   - go test -v  ./...
-  - go build ./inernal/service/goods/cmd/main.go
+  - go build ./internal/service/goods/cmd/main.go
   - ./deploy/buildImage.sh
 
 deploy:
