@@ -1,4 +1,4 @@
-package controller
+package handler
 
 import (
 	"context"
@@ -8,22 +8,23 @@ import (
 
 	"github.com/HYY-yu/seckill.pkg/pkg/page"
 	"github.com/HYY-yu/seckill.pkg/pkg/response"
+
 	"github.com/HYY-yu/seckill.shop/internal/pkg/core"
 	"github.com/HYY-yu/seckill.shop/internal/service/goods/api/svc"
 	"github.com/HYY-yu/seckill.shop/internal/service/goods/model"
 )
 
-type GoodsController struct {
+type GoodsHandler struct {
 	goodsSvc *svc.GoodsSvc
 }
 
-func NewGoodsController(goodsSvc *svc.GoodsSvc) *GoodsController {
-	return &GoodsController{
+func NewGoodsHandler(goodsSvc *svc.GoodsSvc) *GoodsHandler {
+	return &GoodsHandler{
 		goodsSvc: goodsSvc,
 	}
 }
 
-func (s *GoodsController) List(c core.Context) {
+func (s *GoodsHandler) List(c core.Context) {
 	err := c.RequestContext().Request.ParseForm()
 	if err != nil {
 		c.AbortWithError(response.NewErrorAutoMsg(
@@ -39,7 +40,7 @@ func (s *GoodsController) List(c core.Context) {
 	c.Payload(data)
 }
 
-func (s *GoodsController) Add(c core.Context) {
+func (s *GoodsHandler) Add(c core.Context) {
 	params := &model.GoodsAdd{}
 	err := c.ShouldBindJSON(params)
 	if err != nil {
@@ -65,7 +66,7 @@ func (s *GoodsController) Add(c core.Context) {
 	c.Payload(nil)
 }
 
-func (s *GoodsController) Update(c core.Context) {
+func (s *GoodsHandler) Update(c core.Context) {
 	params := &model.GoodsUpdate{}
 	err := c.ShouldBindJSON(params)
 	if err != nil {
@@ -91,7 +92,7 @@ func (s *GoodsController) Update(c core.Context) {
 	c.Payload(nil)
 }
 
-func (s *GoodsController) Delete(c core.Context) {
+func (s *GoodsHandler) Delete(c core.Context) {
 	type DeleteParam struct {
 		Id int `form:"id" v:"required"`
 	}

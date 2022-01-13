@@ -7,25 +7,27 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/HYY-yu/seckill.pkg/pkg/metrics"
+
 	"github.com/HYY-yu/seckill.shop/internal/pkg/middleware"
-	"github.com/HYY-yu/seckill.shop/internal/service/goods/api/controller"
+	"github.com/HYY-yu/seckill.shop/internal/service/goods/api/handler"
 	"github.com/HYY-yu/seckill.shop/internal/service/goods/config"
 
 	"github.com/HYY-yu/seckill.pkg/pkg/jaeger"
+
 	"github.com/HYY-yu/seckill.shop/internal/pkg/cache"
 	"github.com/HYY-yu/seckill.shop/internal/pkg/core"
 	"github.com/HYY-yu/seckill.shop/internal/pkg/db"
 )
 
-type Controllers struct {
-	goodsController *controller.GoodsController
+type Handlers struct {
+	goodsHandler *handler.GoodsHandler
 }
 
-func NewControllers(
-	goodsController *controller.GoodsController,
-) *Controllers {
-	return &Controllers{
-		goodsController: goodsController,
+func NewHandlers(
+	goodsHandler *handler.GoodsHandler,
+) *Handlers {
+	return &Handlers{
+		goodsHandler: goodsHandler,
 	}
 }
 
@@ -82,8 +84,8 @@ func NewApiServer(logger *zap.Logger) (*Server, error) {
 
 	s.Middles = middleware.New(logger)
 
-	// Init Repo Svc Controller
-	c, err := initControllers(s.DB, s.Cache)
+	// Init Repo Svc Handler
+	c, err := initHandlers(s.DB, s.Cache)
 	if err != nil {
 		panic(err)
 	}

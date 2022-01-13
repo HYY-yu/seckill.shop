@@ -7,6 +7,7 @@ import (
 	"github.com/HYY-yu/seckill.pkg/pkg/mysqlerr_helper"
 	"github.com/HYY-yu/seckill.pkg/pkg/page"
 	"github.com/HYY-yu/seckill.pkg/pkg/response"
+
 	"github.com/HYY-yu/seckill.shop/internal/pkg/cache"
 	"github.com/HYY-yu/seckill.shop/internal/pkg/core"
 	"github.com/HYY-yu/seckill.shop/internal/pkg/db"
@@ -53,13 +54,13 @@ func (s *GoodsSvc) List(sctx core.SvcContext, pr *page.PageRequest) (*page.Page,
 		).WithErr(err)
 	}
 	var result = make([]model.GoodsListResp, len(data))
-	for i := range data {
+	for i, e := range data {
 		r := model.GoodsListResp{
-			ID:         data[i].ID,
-			Name:       data[i].Name,
-			Desc:       data[i].Desc,
-			Count:      data[i].Count,
-			CreateTime: data[i].CreateTime,
+			ID:         e.ID,
+			Name:       e.Name,
+			Desc:       e.Desc,
+			Count:      e.Count,
+			CreateTime: e.CreateTime,
 		}
 		result[i] = r
 	}
