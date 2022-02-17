@@ -33,7 +33,9 @@ docker push $dockerName:latest
 # Now clone into the repository that contains the Helm chart
 #
 cd /tmp
-git clone https://github.com/HYY-yu/seckill.shop.chart.git
+git config --global user.name feng.yu
+git config --global user.email 690174435@qq.com
+git clone https://$GITHUB_USER:$GITHUB_PASSWORD@github.com/HYY-yu/seckill.shop.chart.git
 cd seckill.shop.chart
 
 #
@@ -55,8 +57,6 @@ cp /tmp/Chart.yaml.patched Chart.yaml
 
 
 git add --all
-git config --global user.name feng.yu
-git config --global user.email 690174435@qq.com
 git config remote.origin.url https://$GITHUB_USER:$GITHUB_PASSWORD@github.com/HYY-yu/seckill.shop.chart
 git commit -m "Automated deployment of chart version $chart_version"
 git push origin main
