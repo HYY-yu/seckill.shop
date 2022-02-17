@@ -32,3 +32,31 @@ docker push $dockerName:latest
 #
 # Now clone into the repository that contains the Helm chart
 #
+cd /tmp
+git clone https://github.com/HYY-yu/seckill.shop.git
+cd seckill.shop
+
+#
+# Get current version from Chart file and remove build tag
+#
+current_version=$(cat Chart.yaml | grep "version" | awk '{ print $2 }' | sed 's/-dev[a-z,0-9]*//')
+echo "Current chart version: $current_version"
+#
+# Update chart version and appVersion  in chart file
+#
+if [ "X$TRAVIS_TAG" != "X" ]; then
+  chart_version=$TRAVIS_TAG
+else
+  chart_version="$current_version-dev$tag"
+fi
+echo "Using chart version $chart_version"
+cat Chart.yaml | sed "s/version.*/version: $chart_version/"  | sed "s/appVersion.*/appVersion: $tag/" > /tmp/Chart.yaml.patched
+cp /tmp/Chart.yaml.patched Chart.yaml
+
+
+git add --all
+git config --global user.name feng.yu
+git config --global user.email 690174435@qq.com
+git config remote.origin.url https://$GITHUB_USER:$GITHUB_PASSWORD@github.com/HYY-yu/seckill.shop
+git commit -m "Automated deployment of chart version $chart_version"
+git push origin main
