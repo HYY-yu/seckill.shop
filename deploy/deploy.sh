@@ -11,12 +11,13 @@ set -e
 # TRAVIS_BUILD_DIR          Travis build directory
 # TRAVIS_TAG                Tag if the build is caused by a git tag
 
-dockerName='ccr.ccs.tencentyun.com/seckill_srv/seckill-shop'
+dockerName='registry.cn-hangzhou.aliyuncs.com/hyy_yu/seckill.shop'
 
 #
 # Login to Docker hub
 #
-echo "$TENCENT_DOCKER_PASSWORD" | docker login ccr.ccs.tencentyun.com --username $TENCENT_DOCKER_USER --password-stdin
+#echo "$TENCENT_DOCKER_PASSWORD" | docker login ccr.ccs.tencentyun.com --username $TENCENT_DOCKER_USER --password-stdin
+echo "$TENCENT_DOCKER_PASSWORD" | docker login --username=13718640725 registry.cn-hangzhou.aliyuncs.com --password-stdin
 
 #
 # Get tag
