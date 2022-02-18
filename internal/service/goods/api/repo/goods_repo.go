@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/HYY-yu/seckill.pkg/pkg/util"
+
 	"github.com/HYY-yu/seckill.shop/internal/service/goods/model"
 )
 
@@ -54,13 +55,14 @@ func (obj *_GoodsMgr) CountGoods(
 	filter map[string]interface{},
 ) (count int64, err error) {
 	err = obj.
-		addWhere(filter[model.GoodsColumns.Name], util.IsZero, func(db *gorm.DB, v interface{}) *gorm.DB {
+		addWhere(filter[model.GoodsColumns.Name], util.IsNotZero, func(db *gorm.DB, v interface{}) *gorm.DB {
 			return db.Where(model.GoodsColumns.Name+" LIKE ?", "%"+cast.ToString(v)+"%")
 		}).
-		addWhere(filter[model.GoodsColumns.ID], util.IsZero, func(db *gorm.DB, i interface{}) *gorm.DB {
+		addWhere(filter[model.GoodsColumns.ID], util.IsNotZero, func(db *gorm.DB, i interface{}) *gorm.DB {
 			return db.Where(model.GoodsColumns.ID+" = ?", i)
 		}).
 		Where(model.GoodsColumns.DeleteTime + " = 0").
+		Debug().
 		Count(&count).Error
 	return
 }
