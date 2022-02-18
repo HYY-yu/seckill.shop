@@ -17,7 +17,7 @@ set -ev
 # Get short form of git hash for current commit
 #
 hash=$(git log --pretty=format:'%h' -n 1)
-dockerName='ccr.ccs.tencentyun.com/seckill_srv/seckill-shop'
+dockerName='registry.cn-hangzhou.aliyuncs.com/hyy_yu/seckill.shop'
 #
 # Determine tag. If the build is from a tag push, use tag name, otherwise
 # use commit hash
