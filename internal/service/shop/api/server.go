@@ -9,8 +9,8 @@ import (
 	"github.com/HYY-yu/seckill.pkg/pkg/metrics"
 
 	"github.com/HYY-yu/seckill.shop/internal/pkg/middleware"
-	"github.com/HYY-yu/seckill.shop/internal/service/goods/api/handler"
-	"github.com/HYY-yu/seckill.shop/internal/service/goods/config"
+	"github.com/HYY-yu/seckill.shop/internal/service/shop/api/handler"
+	"github.com/HYY-yu/seckill.shop/internal/service/shop/config"
 
 	"github.com/HYY-yu/seckill.pkg/pkg/jaeger"
 

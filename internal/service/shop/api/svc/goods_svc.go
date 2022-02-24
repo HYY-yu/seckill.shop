@@ -11,8 +11,8 @@ import (
 	"github.com/HYY-yu/seckill.shop/internal/pkg/cache"
 	"github.com/HYY-yu/seckill.shop/internal/pkg/core"
 	"github.com/HYY-yu/seckill.shop/internal/pkg/db"
-	"github.com/HYY-yu/seckill.shop/internal/service/goods/api/repo"
-	"github.com/HYY-yu/seckill.shop/internal/service/goods/model"
+	"github.com/HYY-yu/seckill.shop/internal/service/shop/api/repo"
+	"github.com/HYY-yu/seckill.shop/internal/service/shop/model"
 )
 
 type GoodsSvc struct {

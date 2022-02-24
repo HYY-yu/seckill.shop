@@ -16,7 +16,7 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/time/rate"
 
-	"github.com/HYY-yu/seckill.shop/internal/service/goods/config"
+	"github.com/HYY-yu/seckill.shop/internal/service/shop/config"
 
 	"github.com/HYY-yu/seckill.pkg/pkg/response"
 )

@@ -10,7 +10,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 	"gorm.io/gorm"
 
-	"github.com/HYY-yu/seckill.shop/internal/service/goods/config"
+	"github.com/HYY-yu/seckill.shop/internal/service/shop/config"
 )
 
 var dbRowsAffected = attribute.Key("db.rows_affected")

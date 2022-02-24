@@ -9,9 +9,9 @@ import (
 
 	"github.com/HYY-yu/seckill.shop/internal/pkg/cache"
 	"github.com/HYY-yu/seckill.shop/internal/pkg/db"
-	"github.com/HYY-yu/seckill.shop/internal/service/goods/api/handler"
-	"github.com/HYY-yu/seckill.shop/internal/service/goods/api/repo"
-	"github.com/HYY-yu/seckill.shop/internal/service/goods/api/svc"
+	"github.com/HYY-yu/seckill.shop/internal/service/shop/api/handler"
+	"github.com/HYY-yu/seckill.shop/internal/service/shop/api/repo"
+	"github.com/HYY-yu/seckill.shop/internal/service/shop/api/svc"
 )
 
 // initHandlers init Handlers.

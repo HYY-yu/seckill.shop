@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/HYY-yu/seckill.shop/internal/service/goods/model"
+	"github.com/HYY-yu/seckill.shop/internal/service/shop/model"
 	"gorm.io/gorm"
 )
 
