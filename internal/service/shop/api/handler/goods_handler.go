@@ -10,8 +10,8 @@ import (
 	"github.com/HYY-yu/seckill.pkg/pkg/response"
 
 	"github.com/HYY-yu/seckill.shop/internal/pkg/core"
-	"github.com/HYY-yu/seckill.shop/internal/service/goods/api/svc"
-	"github.com/HYY-yu/seckill.shop/internal/service/goods/model"
+	"github.com/HYY-yu/seckill.shop/internal/service/shop/api/svc"
+	"github.com/HYY-yu/seckill.shop/internal/service/shop/model"
 )
 
 type GoodsHandler struct {

@@ -7,7 +7,7 @@ import (
 	"github.com/HYY-yu/seckill.pkg/pkg/response"
 	"github.com/HYY-yu/seckill.pkg/pkg/token"
 	"github.com/HYY-yu/seckill.shop/internal/pkg/core"
-	"github.com/HYY-yu/seckill.shop/internal/service/goods/config"
+	"github.com/HYY-yu/seckill.shop/internal/service/shop/config"
 )
 
 func (m *middleware) Jwt(ctx core.Context) (userId int64, userName string, err response.Error) {

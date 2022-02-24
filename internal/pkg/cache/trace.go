@@ -10,7 +10,7 @@ import (
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 
-	"github.com/HYY-yu/seckill.shop/internal/service/goods/config"
+	"github.com/HYY-yu/seckill.shop/internal/service/shop/config"
 )
 
 type Redis struct {

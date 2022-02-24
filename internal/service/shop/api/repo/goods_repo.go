@@ -8,7 +8,7 @@ import (
 
 	"github.com/HYY-yu/seckill.pkg/pkg/util"
 
-	"github.com/HYY-yu/seckill.shop/internal/service/goods/model"
+	"github.com/HYY-yu/seckill.shop/internal/service/shop/model"
 )
 
 type GoodsRepo interface {
