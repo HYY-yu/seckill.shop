@@ -11,8 +11,8 @@ set -e
 # TRAVIS_BUILD_DIR          Travis build directory
 # TRAVIS_TAG                Tag if the build is caused by a git tag
 
-dockerName='registry.cn-hangzhou.aliyuncs.com/hyy_yu/seckill.shop'
-serverName='shop'
+serviceName='shop'
+dockerName="registry.cn-hangzhou.aliyuncs.com/hyy_yu/seckill.${serviceName}"
 
 
 #
@@ -38,8 +38,8 @@ docker push $dockerName:latest
 cd /tmp
 git config --global user.name feng.yu
 git config --global user.email 690174435@qq.com
-git clone https://$GITHUB_USER:$GITHUB_PASSWORD@github.com/HYY-yu/seckill.$serverName.chart.git
-cd seckill.$serverName.chart
+git clone https://$GITHUB_USER:$GITHUB_PASSWORD@github.com/HYY-yu/seckill.$serviceName.chart.git
+cd seckill.$serviceName.chart
 
 #
 # Get current version from Chart file and remove build tag
@@ -60,6 +60,6 @@ cp /tmp/Chart.yaml.patched Chart.yaml
 
 
 git add --all
-git config remote.origin.url https://$GITHUB_USER:$GITHUB_PASSWORD@github.com/HYY-yu/seckill.$serverName.chart
+git config remote.origin.url https://$GITHUB_USER:$GITHUB_PASSWORD@github.com/HYY-yu/seckill.$serviceName.chart
 git commit -m "Automated deployment of chart version $chart_version"
 git push origin main
