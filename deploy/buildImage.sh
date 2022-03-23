@@ -17,8 +17,9 @@ set -ev
 # Get short form of git hash for current commit
 #
 hash=$(git log --pretty=format:'%h' -n 1)
-dockerName='registry.cn-hangzhou.aliyuncs.com/hyy_yu/seckill.shop'
-serverName='shop'
+serviceName='shop'
+dockerName="registry.cn-hangzhou.aliyuncs.com/hyy_yu/seckill.${serviceName}"
+
 #
 # Determine tag. If the build is from a tag push, use tag name, otherwise
 # use commit hash
@@ -32,10 +33,9 @@ fi
 
 #
 # Create image locally
-# docker pull ccr.ccs.tencentyun.com/seckill_srv/seckill-shop:[tag]
-cd $TRAVIS_BUILD_DIR/internal/service/$serverName
-CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -o sk_$serverName ./cmd/main.go
-docker build --rm -f $TRAVIS_BUILD_DIR/deploy/Dockerfile -t $dockerName:$tag .
+cd $TRAVIS_BUILD_DIR/internal/service/$serviceName
+CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -o sk_$serviceName ./cmd/main.go
+docker build --rm -f $TRAVIS_BUILD_DIR/deploy/Dockerfile --build-arg serviceName=$serviceName -t $dockerName:$tag .
 docker tag $dockerName:$tag $dockerName:latest
 
 #

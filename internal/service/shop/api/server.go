@@ -60,7 +60,7 @@ func NewApiServer(logger *zap.Logger) (*Server, error) {
 	s.Cache = cacheRepo
 
 	// Jaeger
-	tp, err := jaeger.InitJaeger(config.Get().Server.ServerName, config.Get().Jaeger.UdpEndpoint)
+	tp, err := jaeger.InitStdOutForDevelopment(config.Get().Server.ServerName, config.Get().Jaeger.UdpEndpoint)
 	if err != nil {
 		logger.Error("jaeger error", zap.Error(err))
 	}

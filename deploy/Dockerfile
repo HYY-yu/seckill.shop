@@ -1,5 +1,6 @@
 FROM alpine:3.13 AS final
 
+ARG serviceName
 # The main mirrors are giving us timeout issues on builds periodically.
 # So we can try these.
 ENV TZ=Asia/Shanghai
@@ -13,7 +14,7 @@ WORKDIR /app
 
 # Copy the controller binary from the context into our
 # container image
-COPY sk_shop /app/sk_shop
+COPY sk_$serviceName /app/sk_$serviceName
 COPY ./config/cfg.toml /app/cfg.toml
 
-ENTRYPOINT ["/app/sk_shop"]
+ENTRYPOINT ["/app/sk_sk"]
