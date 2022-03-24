@@ -55,7 +55,7 @@ steps:
       - git clone https://$GITHUB_USER:$GITHUB_PASSWORD@github.com/HYY-yu/seckill.${DRONE_STAGE_NAME}.chart.git
       - cd seckill.${DRONE_STAGE_NAME}.chart
       - current_version=$(cat Chart.yaml | grep "version" | awk '{ print $2 }' | sed 's/-dev[a-z,0-9]*//')
-      - echo "Current chart version: $current_version"
+      - "echo 'Current chart version: $current_version'"
       - chart_version=${DRONE_TAG}
       - echo "Using chart version $chart_version"
       - "cat Chart.yaml | sed 's/version.*/version: $chart_version/'  | sed 's/appVersion.*/appVersion: $tag/' > /tmp/Chart.yaml.patched"
