@@ -5,17 +5,22 @@ name: shop
 steps:
   - name: test
     image: golang:1.16.15-alpine3.15
+    environment:
+      GOPROXY: https://goproxy.cn,direct
     commands:
       - go get -d -t ./...
       - go test -v ./...
   - name: build
     image: golang:1.16.15-alpine3.15
+    environment:
+      GOPROXY: https://goproxy.cn,direct
     commands:
       - go build ./internal/service/${DRONE_STAGE_NAME}/cmd/main.go -o ${DRONE_STAGE_NAME}
   - name: publishDocker
     image: plugins/docker
     settings:
-      username: hyy_yu
+      username:
+        from_secret: ALI_USERNAME
       password:
         from_secret: ALI_DOCKER_PASSWORD
       build_args:
