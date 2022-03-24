@@ -21,7 +21,7 @@ steps:
       - name: deps
         path: /go
     commands:
-      - go build -o ${DRONE_STAGE_NAME} ./internal/service/${DRONE_STAGE_NAME}/cmd/main.go
+      - go build -o service ./internal/service/${DRONE_STAGE_NAME}/cmd/main.go
   - name: publishDocker
     image: plugins/docker
     settings:
@@ -32,8 +32,8 @@ steps:
       build_args:
         - serviceName: ${DRONE_STAGE_NAME}
       dockerfile: ./deploy/Dockerfile
+      context: .
       registry: ccr.ccs.tencentyun.com
-      custom_dns: 114.114.114.114
       repo:  ccr.ccs.tencentyun.com/hyy-yu/${DRONE_REPO_NAME}
       purge: true
       auto_tag: true
