@@ -94,11 +94,11 @@ steps:
       helm_command: upgrade
       chart: ./
       release: sk-shop-release
-      api_server: kubernetes.default.svc.cluster.local:6443
+      api_server: kubernetes.default.svc.cluster.local:443
       namespace: default
       kube_token:
         from_secret: KUBE_DRONE_TOKEN
-      kube_service_account: drone
+      kube_service_account: drone-releaser
 
 trigger:
   event:
