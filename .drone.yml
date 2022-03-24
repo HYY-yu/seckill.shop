@@ -21,7 +21,7 @@ steps:
       - name: deps
         path: /go
     commands:
-      - go build -o service ./internal/service/${DRONE_STAGE_NAME}/cmd/main.go
+      - CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -o service ./internal/service/${DRONE_STAGE_NAME}/cmd/main.go
   - name: publishDocker
     image: plugins/docker
     settings:
