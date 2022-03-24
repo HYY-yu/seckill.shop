@@ -70,6 +70,10 @@ steps:
 volumes:
   - name: deps
     temp: {}
+trigger:
+  event:
+    - push
+    - tag
 ---
 # CD管道
 kind: pipeline
