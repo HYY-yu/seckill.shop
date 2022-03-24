@@ -9,6 +9,6 @@ WORKDIR /app
 # Copy the controller binary from the context into our
 # container image
 COPY service /app/service
-COPY internal/service/${serviceName}/config/cfg.toml /app/cfg.toml
+COPY internal/service/shop/config/cfg.toml /app/cfg.toml
 
 ENTRYPOINT ["./service"]
