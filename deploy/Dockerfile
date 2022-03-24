@@ -1,4 +1,4 @@
-FROM alpine:3.15
+FROM  ccr.ccs.tencentyun.com/hyy-yu/alpine-timezone:3.15
 
 ARG serviceName
 ENV SERVICENAME=$serviceName
