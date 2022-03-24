@@ -33,6 +33,7 @@ steps:
         - serviceName: ${DRONE_STAGE_NAME}
       dockerfile: ./deploy/Dockerfile
       registry: ccr.ccs.tencentyun.com
+      custom_dns: 114.114.114.114
       repo:  ccr.ccs.tencentyun.com/hyy-yu/${DRONE_REPO_NAME}
       purge: true
       auto_tag: true
