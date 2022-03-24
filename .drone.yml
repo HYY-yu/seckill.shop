@@ -60,7 +60,7 @@ steps:
       - echo "Using chart version $chart_version"
       - "cat Chart.yaml | sed 's/version.*/version: $chart_version/'  | sed 's/appVersion.*/appVersion: $tag/' > /tmp/Chart.yaml.patched"
       - cp /tmp/Chart.yaml.patched Chart.yaml
-      - git add -all
+      - git add --all
       - git commit -m "Automated deployment of chart version $chart_version"
       - git push origin main
     when:
