@@ -30,7 +30,7 @@ steps:
       password:
         from_secret: DOCKER_PASSWORD
       build_args:
-        - serviceName: ${DRONE_STAGE_NAME}
+        - serviceName=${DRONE_STAGE_NAME}
       dockerfile: ./deploy/Dockerfile
       context: .
       registry: ccr.ccs.tencentyun.com
