@@ -85,9 +85,9 @@ clone:
 
 steps:
   - name: clone
-    image: apline/git
+    image: alpine/git:v2.32.0
     commands:
-      - git clone https://git.hyy-yu.space/yufeng/seckill.shop.chart.git
+      - git clone https://git.hyy-yu.space/yufeng/seckill.shop.chart.git .
   - name: deploy_production
     image: pelotech/drone-helm3
     settings:
