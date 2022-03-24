@@ -1,20 +1,34 @@
 kind: pipeline
 type: kubernetes
-name: en
+name: shop
 
 steps:
-  - name: greeting
-    image: alpine
+  - name: test
+    image: golang:1.16.15-alpine3.15
     commands:
-      - echo hello world
-
----
-kind: pipeline
-type: kubernetes
-name: fr
-
-steps:
-  - name: greeting
-    image: alpine
+      - go get -d -t ./...
+      - go test -v ./...
+  - name: build
+    image: golang:1.16.15-alpine3.15
     commands:
-      - echo bonjour monde
+      - go build ./internal/service/${DRONE_STAGE_NAME}/cmd/main.go -o ${DRONE_STAGE_NAME}
+  - name: publishDocker
+    image: plugins/docker
+    settings:
+      username: hyy_yu
+      password:
+        from_secret: ALI_DOCKER_PASSWORD
+      build_args:
+        - serviceName: ${DRONE_STAGE_NAME}
+      dockerfile: ./deploy/Dockerfile
+      registry: registry.cn-hangzhou.aliyuncs.com
+      repo: registry.cn-hangzhou.aliyuncs.com/hyy_yu/${DRONE_REPO_NAME}
+      auto_tag: true
+    when:
+      branch:
+        - master
+      event:
+        - tag
+
+
+
