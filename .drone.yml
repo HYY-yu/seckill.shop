@@ -4,9 +4,12 @@ name: shop
 
 steps:
   - name: test
-    image: golang:1.16.15-alpine3.15
+    image: golang:1.16.15
     environment:
       GOPROXY: https://goproxy.cn,direct
+    volumes:
+      - name: deps
+        path: /go
     commands:
       - go get -d -t ./...
       - go test -v ./...
@@ -14,6 +17,9 @@ steps:
     image: golang:1.16.15-alpine3.15
     environment:
       GOPROXY: https://goproxy.cn,direct
+    volumes:
+      - name: deps
+        path: /go
     commands:
       - go build ./internal/service/${DRONE_STAGE_NAME}/cmd/main.go -o ${DRONE_STAGE_NAME}
   - name: publishDocker
@@ -34,6 +40,37 @@ steps:
         - master
       event:
         - tag
+  - name: publishCharts
+    image: golang:1.16.15
+    environment:
+      GOPROXY: https://goproxy.cn,direct
+      GITHUB_USER:
+        from_secret: GITHUB_USER
+      GITHUB_PASSWORD:
+        from_secret: GITHUB_PASSWROD
+    commands:
+      - cd /tmp
+      - git config --global user.name feng.yu
+      - git config --global user.email 690174435@qq.com
+      - git clone https://$GITHUB_USER:$GITHUB_PASSWORD@github.com/HYY-yu/seckill.${DRONE_STAGE_NAME}.chart.git
+      - cd seckill.${DRONE_STAGE_NAME}.chart
+      - current_version=$(cat Chart.yaml | grep "version" | awk '{ print $2 }' | sed 's/-dev[a-z,0-9]*//')
+      - echo "Current chart version: $current_version"
+      - chart_version=${DRONE_TAG}
+      - echo "Using chart version $chart_version"
+      - "cat Chart.yaml | sed 's/version.*/version: $chart_version/'  | sed 's/appVersion.*/appVersion: $tag/' > /tmp/Chart.yaml.patched"
+      - cp /tmp/Chart.yaml.patched Chart.yaml
+      - git add -all
+      - git commit -m "Automated deployment of chart version $chart_version"
+      - git push origin main
 
-
+trigger:
+  branch:
+    - master
+    - dev
+  event:
+    - push
+volumes:
+  - name: deps
+    temp: {}
 
