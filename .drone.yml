@@ -90,6 +90,9 @@ steps:
       - git clone https://git.hyy-yu.space/yufeng/seckill.shop.chart.git .
   - name: deploy_production
     image: pelotech/drone-helm3
+    environment:
+      KUBE_TOKEN:
+        from_secret: KUBE_DRONE_TOKEN
     settings:
       helm_command: upgrade
       chart: ./
