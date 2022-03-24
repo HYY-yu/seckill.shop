@@ -37,10 +37,8 @@ steps:
       purge: true
       auto_tag: true
     when:
-      branch:
-        - master
-      event:
-        - tag
+      ref:
+        - refs/tags/v*
   - name: publishCharts
     image: golang:1.16.15
     environment:
@@ -65,10 +63,8 @@ steps:
       - git commit -m "Automated deployment of chart version $chart_version"
       - git push origin main
     when:
-      branch:
-        - master
-      event:
-        - tag
+      ref:
+        - refs/tags/v*
 
 volumes:
   - name: deps
