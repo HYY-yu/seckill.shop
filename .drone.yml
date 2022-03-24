@@ -90,15 +90,14 @@ steps:
       - git clone https://git.hyy-yu.space/yufeng/seckill.shop.chart.git .
   - name: deploy_production
     image: pelotech/drone-helm3
-    environment:
-      KUBE_TOKEN:
-        from_secret: KUBE_DRONE_TOKEN
     settings:
       helm_command: upgrade
       chart: ./
       release: sk-shop-release
-      api_server: kubernetes.default.svc:443
+      api_server: kubernetes.default.svc.cluster.local:6443
       namespace: default
+      kube_token:
+        from_secret: KUBE_DRONE_TOKEN
       kube_service_account: drone
 
 trigger:
