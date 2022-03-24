@@ -75,6 +75,7 @@ trigger:
     - dev
   event:
     - push
+    - tag
 volumes:
   - name: deps
     temp: {}
