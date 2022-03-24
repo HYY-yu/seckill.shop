@@ -1,5 +1,6 @@
 package model
 
+// DEONE
 type GoodsListResp struct {
 	ID         int    `json:"id"`
 	Name       string `json:"name"`
