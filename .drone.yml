@@ -96,7 +96,7 @@ steps:
       release: sk-shop-release
       api_server: kubernetes.default.svc:443
       namespace: default
-      kube_service_account: default
+      kube_service_account: drone
 
 trigger:
   event:
