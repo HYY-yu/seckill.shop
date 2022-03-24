@@ -99,6 +99,8 @@ steps:
       kube_token:
         from_secret: KUBE_DRONE_TOKEN
       kube_service_account: drone-releaser
+      kube_certificate:
+        from_secret: KUBE_DRONE_CERT
 
 trigger:
   event:
