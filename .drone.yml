@@ -26,14 +26,15 @@ steps:
     image: plugins/docker
     settings:
       username:
-        from_secret: ALI_USERNAME
+        from_secret: DOCKER_USERNAME
       password:
-        from_secret: ALI_DOCKER_PASSWORD
+        from_secret: DOCKER_PASSWORD
       build_args:
         - serviceName: ${DRONE_STAGE_NAME}
       dockerfile: ./deploy/Dockerfile
-      registry: registry.cn-hangzhou.aliyuncs.com
-      repo: registry.cn-hangzhou.aliyuncs.com/hyy_yu/${DRONE_REPO_NAME}
+      registry: ccr.ccs.tencentyun.com
+      repo:  ccr.ccs.tencentyun.com/hyy-yu/${DRONE_REPO_NAME}
+      purge: true
       auto_tag: true
     when:
       event:
@@ -48,9 +49,9 @@ steps:
         from_secret: GITHUB_PASSWROD
     commands:
       - cd /tmp
-      - git config --global user.name feng.yu
+      - git config --global user.name drone.robot
       - git config --global user.email 690174435@qq.com
-      - git clone https://$GITHUB_USER:$GITHUB_PASSWORD@github.com/HYY-yu/seckill.${DRONE_STAGE_NAME}.chart.git
+      - git clone https://$GIT_USERNAME:$GIT_PASSWORD@git.hyy-yu.space/yufeng/seckill.${DRONE_STAGE_NAME}.chart.git
       - cd seckill.${DRONE_STAGE_NAME}.chart
       - current_version=$(cat Chart.yaml | grep "version" | awk '{ print $2 }' | sed 's/-dev[a-z,0-9]*//')
       - "echo 'Current chart version: $current_version'"
@@ -72,4 +73,32 @@ trigger:
 volumes:
   - name: deps
     temp: {}
+---
+# CD管道
+kind: pipeline
+type: kubernetes
+name: deploy
 
+clone:
+  disable: true
+
+steps:
+  - name: clone
+    image: apline/git
+    commands:
+      - git clone https://git.hyy-yu.space/yufeng/seckill.shop.chart.git
+  - name: deploy_production
+    image: pelotech/drone-helm3
+    settings:
+      helm_command: upgrade
+      chart: ./
+      release: sk-shop-release
+      api_server: kubernetes.default.svc:443
+      namespace: default
+      kube_service_account: default
+
+trigger:
+  event:
+    - promote
+  target:
+    - production
