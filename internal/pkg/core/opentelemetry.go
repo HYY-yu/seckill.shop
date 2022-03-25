@@ -44,7 +44,7 @@ func (o *OpenTelemetry) Telemetry(c Context) {
 	traceId := span.SpanContext().TraceID().String()
 
 	// 设置到 请求上下文 中
-	ctx.Request.WithContext(jCtx)
+	ctx.Request = ctx.Request.WithContext(jCtx)
 
 	// 设置到logger中
 	logger = logger.With(zap.String("span_id", spanId))
