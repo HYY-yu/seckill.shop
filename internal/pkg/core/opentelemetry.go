@@ -12,6 +12,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/HYY-yu/seckill.pkg/pkg/response"
+
 	"github.com/HYY-yu/seckill.shop/internal/service/shop/config"
 )
 
@@ -39,13 +40,15 @@ func (o *OpenTelemetry) Telemetry(c Context) {
 	jCtx := otel.GetTextMapPropagator().Extract(ctx.Request.Context(), propagation.HeaderCarrier(ctx.Request.Header))
 	jCtx, span := tr.Start(jCtx, ctx.Request.URL.String(), trace.WithSpanKind(trace.SpanKindServer), trace.WithNewRoot())
 	defer span.End()
-	traceId := span.SpanContext().SpanID().String()
+	spanId := span.SpanContext().SpanID().String()
+	traceId := span.SpanContext().TraceID().String()
 
 	// 设置到 请求上下文 中
 	ctx.Request.WithContext(jCtx)
 
 	// 设置到logger中
-	logger = logger.With(zap.String("trace_id", traceId))
+	logger = logger.With(zap.String("span_id", spanId))
+	logger = logger.With(zap.String("traceId", traceId))
 	c.setLogger(logger)
 
 	ctx.Next()
