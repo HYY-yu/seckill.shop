@@ -89,17 +89,19 @@ steps:
     commands:
       - git clone https://git.hyy-yu.space/yufeng/seckill.shop.chart.git .
   - name: deploy_production
-    image: bitbeats/drone-helm3
+    image: pelotech/drone-helm3
     settings:
+      debug: true
+      helm_command: upgrade
       chart: ./
       release: sk-shop-release
       api_server: https://kubernetes.default.svc.cluster.local
       namespace: default
-      kube_skip_tls: true
       kube_token:
         from_secret: KUBE_DRONE_TOKEN
-      wait: true
-      force: true
+      kube_service_account: drone-releaser
+      kube_certificate:
+        from_secret: KUBE_DRONE_CERT
 
 trigger:
   event:
