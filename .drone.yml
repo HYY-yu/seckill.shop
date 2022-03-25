@@ -11,7 +11,7 @@ steps:
       - name: deps
         path: /go
     commands:
-#      - go get -d -t ./...
+      - go get -d -t ./...
       - go test -v ./...
   - name: build
     image: golang:1.16.15-alpine3.15
@@ -22,9 +22,6 @@ steps:
         path: /go
     commands:
       - CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -o service ./internal/service/${DRONE_STAGE_NAME}/cmd/main.go
-    when:
-      ref:
-        - refs/tags/v*
   - name: publishDocker
     image: plugins/docker
     settings:
@@ -39,7 +36,8 @@ steps:
       registry: ccr.ccs.tencentyun.com
       repo:  ccr.ccs.tencentyun.com/hyy-yu/${DRONE_REPO_NAME}
       purge: true
-      auto_tag: true
+      tags:
+        - ${DRONE_TAG}
     when:
       ref:
         - refs/tags/v*
@@ -94,7 +92,6 @@ steps:
   - name: deploy_production
     image: pelotech/drone-helm3
     settings:
-      debug: true
       helm_command: upgrade
       chart: ./
       release: sk-shop-release
