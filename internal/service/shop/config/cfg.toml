@@ -7,13 +7,13 @@ secret = "i1ydX9RtHyuJTrw7frcu"
 connMaxLifeTime = 60
 maxIdleConn = 60
 maxOpenConn = 10
-addr = ":3306"
+addr = "mysql-0.mysql.mysql.svc.cluster.local:3306"
 name = "seckill"
 pass = "root"
 user = "root"
 
 [redis]
-addr = ":6379"
+addr = "redis.mysql.svc.cluster.local:6379"
 db = "0"
 maxRetries = 3
 minIdleConns = 5
