@@ -4,12 +4,12 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/HYY-yu/seckill.pkg/core"
 	"github.com/gogf/gf/v2/util/gvalid"
 
 	"github.com/HYY-yu/seckill.pkg/pkg/page"
 	"github.com/HYY-yu/seckill.pkg/pkg/response"
 
-	"github.com/HYY-yu/seckill.shop/internal/pkg/core"
 	"github.com/HYY-yu/seckill.shop/internal/service/shop/api/svc"
 	"github.com/HYY-yu/seckill.shop/internal/service/shop/model"
 )

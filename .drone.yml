@@ -1,3 +1,4 @@
+# CI管道
 kind: pipeline
 type: kubernetes
 name: shop
@@ -88,12 +89,14 @@ steps:
   - name: clone
     image: alpine/git:v2.32.0
     commands:
+      # 请修改git地址，以对应不同项目
       - git clone https://git.hyy-yu.space/yufeng/seckill.shop.chart.git .
   - name: deploy_production
     image: pelotech/drone-helm3
     settings:
       helm_command: upgrade
       chart: ./
+      # 请修改release，以对应不同项目
       release: sk-shop-release
       api_server: https://kubernetes.default.svc.cluster.local
       namespace: default
