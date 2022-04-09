@@ -3,6 +3,9 @@ package api
 import (
 	"errors"
 
+	"github.com/HYY-yu/seckill.pkg/cache"
+	"github.com/HYY-yu/seckill.pkg/core"
+	"github.com/HYY-yu/seckill.pkg/db"
 	"go.opentelemetry.io/otel/sdk/trace"
 	"go.uber.org/zap"
 
@@ -13,10 +16,6 @@ import (
 	"github.com/HYY-yu/seckill.shop/internal/service/shop/config"
 
 	"github.com/HYY-yu/seckill.pkg/pkg/jaeger"
-
-	"github.com/HYY-yu/seckill.shop/internal/pkg/cache"
-	"github.com/HYY-yu/seckill.shop/internal/pkg/core"
-	"github.com/HYY-yu/seckill.shop/internal/pkg/db"
 )
 
 type Handlers struct {
@@ -46,14 +45,31 @@ func NewApiServer(logger *zap.Logger) (*Server, error) {
 	}
 	s := &Server{}
 	s.Logger = logger
+	cfg := config.Get()
 
-	dbRepo, err := db.New()
+	dbRepo, err := db.New(&db.DBConfig{
+		User:            cfg.MySQL.Base.User,
+		Pass:            cfg.MySQL.Base.Pass,
+		Addr:            cfg.MySQL.Base.Addr,
+		Name:            cfg.MySQL.Base.Name,
+		MaxOpenConn:     cfg.MySQL.Base.MaxOpenConn,
+		MaxIdleConn:     cfg.MySQL.Base.MaxIdleConn,
+		ConnMaxLifeTime: cfg.MySQL.Base.ConnMaxLifeTime,
+		ServerName:      cfg.Server.ServerName,
+	})
 	if err != nil {
 		logger.Fatal("new db err", zap.Error(err))
 	}
 	s.DB = dbRepo
 
-	cacheRepo, err := cache.New()
+	cacheRepo, err := cache.New(cfg.Server.ServerName, &cache.RedisConf{
+		Addr:         cfg.Redis.Addr,
+		Pass:         cfg.Redis.Pass,
+		Db:           cfg.Redis.Db,
+		MaxRetries:   cfg.Redis.MaxRetries,
+		PoolSize:     cfg.Redis.PoolSize,
+		MinIdleConns: cfg.Redis.MinIdleConns,
+	})
 	if err != nil {
 		logger.Fatal("new cache err", zap.Error(err))
 	}
@@ -76,7 +92,7 @@ func NewApiServer(logger *zap.Logger) (*Server, error) {
 		opts = append(opts, core.WithDisablePProf())
 	}
 
-	engine, err := core.New(logger, opts...)
+	engine, err := core.New(cfg.Server.ServerName, logger, opts...)
 	if err != nil {
 		panic(err)
 	}

@@ -1,10 +1,10 @@
 package middleware
 
 import (
+	"github.com/HYY-yu/seckill.pkg/core"
 	"go.uber.org/zap"
 
 	"github.com/HYY-yu/seckill.pkg/pkg/response"
-	"github.com/HYY-yu/seckill.shop/internal/pkg/core"
 )
 
 var _ Middleware = (*middleware)(nil)

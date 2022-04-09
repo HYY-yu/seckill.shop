@@ -4,13 +4,13 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/HYY-yu/seckill.pkg/cache"
+	"github.com/HYY-yu/seckill.pkg/core"
+	"github.com/HYY-yu/seckill.pkg/db"
 	"github.com/HYY-yu/seckill.pkg/pkg/mysqlerr_helper"
 	"github.com/HYY-yu/seckill.pkg/pkg/page"
 	"github.com/HYY-yu/seckill.pkg/pkg/response"
 
-	"github.com/HYY-yu/seckill.shop/internal/pkg/cache"
-	"github.com/HYY-yu/seckill.shop/internal/pkg/core"
-	"github.com/HYY-yu/seckill.shop/internal/pkg/db"
 	"github.com/HYY-yu/seckill.shop/internal/service/shop/api/repo"
 	"github.com/HYY-yu/seckill.shop/internal/service/shop/model"
 )
