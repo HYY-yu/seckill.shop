@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"net"
 	"net/http"
 	"time"
 
@@ -26,20 +27,30 @@ func main() {
 		_ = l.Sync()
 	}()
 
-	// 初始化HTTP服务
+	// 初始化 API 服务
 	s, err := api.NewApiServer(l)
 	if err != nil {
 		panic(err)
 	}
 
-	server := &http.Server{
-		Addr:    config.Get().Server.Host,
-		Handler: s.Engine,
-	}
-
+	// 启动HTTP服务
 	go func() {
-		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		// 获取地址
+		s.HttpServer.Addr = config.Get().Server.Host
+		if err := s.HttpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			l.Fatal("http server startup err", zap.Error(err))
+		}
+	}()
+
+	// 启动GRPC服务
+	go func() {
+		lis, err := net.Listen("tcp", config.Get().Server.Grpc.Host)
+		if err != nil {
+			l.Fatal("failed to listen ", zap.Error(err))
+		}
+		err = s.GrpcServer.Serve(lis)
+		if err != nil {
+			l.Fatal("failed to start server ", zap.Error(err))
 		}
 	}()
 
@@ -50,9 +61,14 @@ func main() {
 			ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 			defer cancel()
 
-			if err := server.Shutdown(ctx); err != nil {
+			if err := s.HttpServer.Shutdown(ctx); err != nil {
 				l.Error("server shutdown err", zap.Error(err))
 			}
+		},
+
+		// 关闭 grpc server
+		func() {
+			s.GrpcServer.GracefulStop()
 		},
 
 		// 关闭 db

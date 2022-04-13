@@ -1,10 +1,14 @@
 package api
 
-func (s *Server) Route(c *Handlers) {
+import (
+	"github.com/HYY-yu/seckill.pkg/core"
+)
 
-	v1Group := s.Engine.Group("/v1")
+func (s *Server) Route(c *Handlers, engine core.Engine) {
+
+	v1Group := engine.Group("/v1")
 	{
-		// v1Group.Use(core.WrapAuthHandler(s.Middles.Jwt))
+		// v1Group.Use(core.WrapAuthHandler(s.HTTPMiddles.Jwt))
 
 		v1Group.GET("/list", c.goodsHandler.List)
 		v1Group.PUT("/resource", c.goodsHandler.Add)

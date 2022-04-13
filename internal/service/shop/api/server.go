@@ -2,16 +2,20 @@ package api
 
 import (
 	"errors"
+	"net/http"
 
 	"github.com/HYY-yu/seckill.pkg/cache"
 	"github.com/HYY-yu/seckill.pkg/core"
 	"github.com/HYY-yu/seckill.pkg/db"
 	"go.opentelemetry.io/otel/sdk/trace"
 	"go.uber.org/zap"
+	"google.golang.org/grpc"
 
 	"github.com/HYY-yu/seckill.pkg/pkg/metrics"
 
 	"github.com/HYY-yu/seckill.shop/internal/pkg/middleware"
+	"github.com/HYY-yu/seckill.shop/internal/service/shop/api/grpc_handler"
+	"github.com/HYY-yu/seckill.shop/internal/service/shop/api/grpc_handler/proto"
 	"github.com/HYY-yu/seckill.shop/internal/service/shop/api/handler"
 	"github.com/HYY-yu/seckill.shop/internal/service/shop/config"
 
@@ -19,24 +23,28 @@ import (
 )
 
 type Handlers struct {
-	goodsHandler *handler.GoodsHandler
+	goodsHandler     *handler.GoodsHandler
+	grpcGoodsHandler *grpc_handler.GoodsHandler
 }
 
 func NewHandlers(
 	goodsHandler *handler.GoodsHandler,
+	grpcGoodsHandler *grpc_handler.GoodsHandler,
 ) *Handlers {
 	return &Handlers{
-		goodsHandler: goodsHandler,
+		goodsHandler:     goodsHandler,
+		grpcGoodsHandler: grpcGoodsHandler,
 	}
 }
 
 type Server struct {
-	Logger  *zap.Logger
-	Engine  core.Engine
-	DB      db.Repo
-	Cache   cache.Repo
-	Trace   *trace.TracerProvider
-	Middles middleware.Middleware
+	Logger      *zap.Logger
+	HttpServer  *http.Server
+	GrpcServer  *grpc.Server
+	DB          db.Repo
+	Cache       cache.Repo
+	Trace       *trace.TracerProvider
+	HTTPMiddles middleware.Middleware
 }
 
 func NewApiServer(logger *zap.Logger) (*Server, error) {
@@ -85,27 +93,38 @@ func NewApiServer(logger *zap.Logger) (*Server, error) {
 	// Metrics
 	metrics.InitMetrics(config.Get().Server.ServerName, "api")
 
+	// Repo Svc Handler
+	c, err := initHandlers(logger, s.DB, s.Cache)
+	if err != nil {
+		panic(err)
+	}
+
+	// HTTP Server
 	opts := make([]core.Option, 0)
 	opts = append(opts, core.WithEnableCors())
 	opts = append(opts, core.WithRecordMetrics(metrics.RecordMetrics))
 	if !config.Get().Server.Pprof {
 		opts = append(opts, core.WithDisablePProf())
 	}
-
 	engine, err := core.New(cfg.Server.ServerName, logger, opts...)
 	if err != nil {
 		panic(err)
 	}
-	s.Engine = engine
+	// Init HTTP Middles
+	s.HTTPMiddles = middleware.New(logger)
 
-	s.Middles = middleware.New(logger)
-
-	// Init Repo Svc Handler
-	c, err := initHandlers(s.DB, s.Cache)
-	if err != nil {
-		panic(err)
+	// Route
+	s.Route(c, engine)
+	server := &http.Server{
+		Handler: engine,
 	}
+	s.HttpServer = server
 
-	s.Route(c)
+	// GRPC Server
+	var optsGrpc []grpc.ServerOption
+	grpcServer := grpc.NewServer(optsGrpc...)
+	proto.RegisterShopServer(grpcServer, c.grpcGoodsHandler)
+	s.GrpcServer = grpcServer
+
 	return s, nil
 }
