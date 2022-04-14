@@ -12,15 +12,15 @@ service Shop {
 // 服务端默认返回 PageSize 个数据
 // PageSize 传0，服务端会返回全部数据
 message ListReq {
-  int32 PageSize = 1;
-  string SortBy = 2;
-  string FieldList = 3; // 数据节约，只返指定字段的数据
-  int64 ShopId = 4; // 按id筛选
-  string ShopName = 5; // 按名称筛选
+  int32 PageNo = 1;
+  int32 PageSize = 2;
+  string SortBy = 3;
+  string FieldList = 4; // 数据节约，只返指定字段的数据
+  int64 ShopId = 5; // 按id筛选
+  string ShopName = 6; // 按名称筛选
 }
 
 message ListResp {
-  bool IsLast = 1; // 是否是最后一个数据
   repeated ShopData Data = 2;
 }
 

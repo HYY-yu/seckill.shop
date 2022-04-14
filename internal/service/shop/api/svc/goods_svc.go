@@ -1,7 +1,9 @@
 package svc
 
 import (
+	"context"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/HYY-yu/seckill.pkg/cache"
@@ -11,6 +13,7 @@ import (
 	"github.com/HYY-yu/seckill.pkg/pkg/page"
 	"github.com/HYY-yu/seckill.pkg/pkg/response"
 
+	"github.com/HYY-yu/seckill.shop/internal/service/shop/api/grpc_handler/proto"
 	"github.com/HYY-yu/seckill.shop/internal/service/shop/api/repo"
 	"github.com/HYY-yu/seckill.shop/internal/service/shop/model"
 )
@@ -28,6 +31,55 @@ func NewGoodsSvc(db db.Repo, ca cache.Repo, goodsRepo repo.GoodsRepo) *GoodsSvc 
 		Cache:     ca,
 		GoodsRepo: goodsRepo,
 	}
+}
+
+func (s *GoodsSvc) GrpcList(req *proto.ListReq) (shopData []*proto.ShopData, err error) {
+	// TODO 获取GRPC带Trace的上下文
+	ctx := context.TODO()
+	mgr := s.GoodsRepo.Mgr(ctx, s.DB.GetDb(ctx))
+
+	filter := make(map[string]interface{})
+	filter[model.GoodsColumns.ID] = req.GetShopId()
+	filter[model.GoodsColumns.Name] = req.GetShopName()
+
+	// field list
+	fieldList := strings.Split(req.GetFieldList(), ",")
+	for i := range fieldList {
+		switch fieldList[i] {
+		case model.GoodsColumns.Name:
+			fieldList[i] = model.GoodsColumns.Name
+		case model.GoodsColumns.Count:
+			fieldList[i] = model.GoodsColumns.Count
+		case model.GoodsColumns.Desc:
+			fieldList[i] = model.GoodsColumns.Desc
+		case model.GoodsColumns.CreateTime:
+			fieldList[i] = model.GoodsColumns.CreateTime
+		default:
+			continue
+		}
+	}
+	mgr.WithSelects(model.GoodsColumns.ID, fieldList...)
+	pr := page.NewPageRequest(int(req.PageNo), int(req.PageSize), req.SortBy, filter)
+	limit, offset := pr.GetLimitAndOffset()
+	pr.AddAllowSortField(model.GoodsColumns.CreateTime)
+	sort, _ := pr.Sort()
+
+	data, err := mgr.ListGoods(limit, offset, pr.Filter, sort)
+	if err != nil {
+		return nil, err
+	}
+	var result = make([]*proto.ShopData, len(data))
+	for i, e := range data {
+		r := &proto.ShopData{
+			Id:         int64(e.ID),
+			Name:       e.Name,
+			Desc:       e.Desc,
+			Count:      int64(e.Count),
+			CreateTime: int32(e.CreateTime),
+		}
+		result[i] = r
+	}
+	return result, err
 }
 
 func (s *GoodsSvc) List(sctx core.SvcContext, pr *page.PageRequest) (*page.Page, error) {

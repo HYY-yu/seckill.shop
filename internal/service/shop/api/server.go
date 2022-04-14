@@ -7,19 +7,22 @@ import (
 	"github.com/HYY-yu/seckill.pkg/cache"
 	"github.com/HYY-yu/seckill.pkg/core"
 	"github.com/HYY-yu/seckill.pkg/db"
+	grpc_zap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
+	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	"go.opentelemetry.io/otel/sdk/trace"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
 	"github.com/HYY-yu/seckill.pkg/pkg/metrics"
 
+	"github.com/HYY-yu/seckill.pkg/pkg/jaeger"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+
 	"github.com/HYY-yu/seckill.shop/internal/pkg/middleware"
 	"github.com/HYY-yu/seckill.shop/internal/service/shop/api/grpc_handler"
 	"github.com/HYY-yu/seckill.shop/internal/service/shop/api/grpc_handler/proto"
 	"github.com/HYY-yu/seckill.shop/internal/service/shop/api/handler"
 	"github.com/HYY-yu/seckill.shop/internal/service/shop/config"
-
-	"github.com/HYY-yu/seckill.pkg/pkg/jaeger"
 )
 
 type Handlers struct {
@@ -92,6 +95,7 @@ func NewApiServer(logger *zap.Logger) (*Server, error) {
 
 	// Metrics
 	metrics.InitMetrics(config.Get().Server.ServerName, "api")
+	metrics.InitGrpcMetrics()
 
 	// Repo Svc Handler
 	c, err := initHandlers(logger, s.DB, s.Cache)
@@ -122,6 +126,18 @@ func NewApiServer(logger *zap.Logger) (*Server, error) {
 
 	// GRPC Server
 	var optsGrpc []grpc.ServerOption
+	optsGrpc = append(optsGrpc, grpc.ChainUnaryInterceptor(
+		otelgrpc.UnaryServerInterceptor(),
+		grpc_recovery.UnaryServerInterceptor(),
+		grpc_zap.UnaryServerInterceptor(logger),
+		metrics.GRPCMetrics.UnaryServerInterceptor(),
+	))
+	optsGrpc = append(optsGrpc, grpc.ChainStreamInterceptor(
+		otelgrpc.StreamServerInterceptor(),
+		grpc_recovery.StreamServerInterceptor(),
+		grpc_zap.StreamServerInterceptor(logger),
+		metrics.GRPCMetrics.StreamServerInterceptor(),
+	))
 	grpcServer := grpc.NewServer(optsGrpc...)
 	proto.RegisterShopServer(grpcServer, c.grpcGoodsHandler)
 	s.GrpcServer = grpcServer

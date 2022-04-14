@@ -21,6 +21,6 @@ func NewGoodsHandler(logger *zap.Logger, goodsSvc *svc.GoodsSvc) *GoodsHandler {
 }
 
 func (g GoodsHandler) List(req *proto.ListReq, server proto.Shop_ListServer) error {
-	// TODO implement me
-	panic("implement me")
+
+	return nil
 }
