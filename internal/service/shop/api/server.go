@@ -2,41 +2,52 @@ package api
 
 import (
 	"errors"
+	"net/http"
 
 	"github.com/HYY-yu/seckill.pkg/cache"
 	"github.com/HYY-yu/seckill.pkg/core"
+	"github.com/HYY-yu/seckill.pkg/core/middleware"
 	"github.com/HYY-yu/seckill.pkg/db"
+	grpc_zap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
+	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	"go.opentelemetry.io/otel/sdk/trace"
 	"go.uber.org/zap"
+	"google.golang.org/grpc"
 
 	"github.com/HYY-yu/seckill.pkg/pkg/metrics"
 
-	"github.com/HYY-yu/seckill.shop/internal/pkg/middleware"
+	"github.com/HYY-yu/seckill.pkg/pkg/jaeger"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+
+	"github.com/HYY-yu/seckill.shop/internal/service/shop/api/grpc_handler"
 	"github.com/HYY-yu/seckill.shop/internal/service/shop/api/handler"
 	"github.com/HYY-yu/seckill.shop/internal/service/shop/config"
-
-	"github.com/HYY-yu/seckill.pkg/pkg/jaeger"
+	"github.com/HYY-yu/seckill.shop/proto"
 )
 
 type Handlers struct {
-	goodsHandler *handler.GoodsHandler
+	goodsHandler     *handler.GoodsHandler
+	grpcGoodsHandler *grpc_handler.GoodsHandler
 }
 
 func NewHandlers(
 	goodsHandler *handler.GoodsHandler,
+	grpcGoodsHandler *grpc_handler.GoodsHandler,
 ) *Handlers {
 	return &Handlers{
-		goodsHandler: goodsHandler,
+		goodsHandler:     goodsHandler,
+		grpcGoodsHandler: grpcGoodsHandler,
 	}
 }
 
 type Server struct {
-	Logger  *zap.Logger
-	Engine  core.Engine
-	DB      db.Repo
-	Cache   cache.Repo
-	Trace   *trace.TracerProvider
-	Middles middleware.Middleware
+	Logger      *zap.Logger
+	HttpServer  *http.Server
+	GrpcServer  *grpc.Server
+	DB          db.Repo
+	Cache       cache.Repo
+	Trace       *trace.TracerProvider
+	HTTPMiddles middleware.Middleware
 }
 
 func NewApiServer(logger *zap.Logger) (*Server, error) {
@@ -76,36 +87,68 @@ func NewApiServer(logger *zap.Logger) (*Server, error) {
 	s.Cache = cacheRepo
 
 	// Jaeger
-	tp, err := jaeger.InitJaeger(config.Get().Server.ServerName, config.Get().Jaeger.UdpEndpoint)
+	var tp *trace.TracerProvider
+	if cfg.Jaeger.StdOut {
+		tp, err = jaeger.InitStdOutForDevelopment(cfg.Server.ServerName, cfg.Jaeger.UdpEndpoint)
+	} else {
+		tp, err = jaeger.InitJaeger(cfg.Server.ServerName, cfg.Jaeger.UdpEndpoint)
+	}
 	if err != nil {
 		logger.Error("jaeger error", zap.Error(err))
 	}
 	s.Trace = tp
 
 	// Metrics
-	metrics.InitMetrics(config.Get().Server.ServerName, "api")
+	metrics.InitMetrics(cfg.Server.ServerName, "api")
+	err = metrics.InitGrpcMetrics()
+	if err != nil {
+		panic(err)
+	}
 
+	// Repo Svc Handler
+	c, err := initHandlers(logger, s.DB, s.Cache)
+	if err != nil {
+		panic(err)
+	}
+
+	// HTTP Server
 	opts := make([]core.Option, 0)
 	opts = append(opts, core.WithEnableCors())
 	opts = append(opts, core.WithRecordMetrics(metrics.RecordMetrics))
-	if !config.Get().Server.Pprof {
+	if !cfg.Server.Pprof {
 		opts = append(opts, core.WithDisablePProf())
 	}
-
 	engine, err := core.New(cfg.Server.ServerName, logger, opts...)
 	if err != nil {
 		panic(err)
 	}
-	s.Engine = engine
+	// Init HTTP Middles
+	s.HTTPMiddles = middleware.New(logger, cfg.JWT.Secret)
 
-	s.Middles = middleware.New(logger)
-
-	// Init Repo Svc Handler
-	c, err := initHandlers(s.DB, s.Cache)
-	if err != nil {
-		panic(err)
+	// Route
+	s.Route(c, engine)
+	server := &http.Server{
+		Handler: engine,
 	}
+	s.HttpServer = server
 
-	s.Route(c)
+	// GRPC Server
+	var optsGrpc []grpc.ServerOption
+	optsGrpc = append(optsGrpc, grpc.ChainUnaryInterceptor(
+		otelgrpc.UnaryServerInterceptor(),
+		grpc_recovery.UnaryServerInterceptor(),
+		grpc_zap.UnaryServerInterceptor(logger),
+		metrics.GRPCMetrics.UnaryServerInterceptor(),
+	))
+	optsGrpc = append(optsGrpc, grpc.ChainStreamInterceptor(
+		otelgrpc.StreamServerInterceptor(),
+		grpc_recovery.StreamServerInterceptor(),
+		grpc_zap.StreamServerInterceptor(logger),
+		metrics.GRPCMetrics.StreamServerInterceptor(),
+	))
+	grpcServer := grpc.NewServer(optsGrpc...)
+	proto.RegisterShopServer(grpcServer, c.grpcGoodsHandler)
+	s.GrpcServer = grpcServer
+
 	return s, nil
 }
