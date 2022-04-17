@@ -5,7 +5,7 @@ option go_package = "./proto";
 package grpc_handler;
 
 service Shop {
-  rpc List(ListReq) returns (stream ListResp) {}
+  rpc List(ListReq) returns (ListResp) {}
 }
 
 // Grpc分页请求
@@ -21,7 +21,7 @@ message ListReq {
 }
 
 message ListResp {
-  repeated ShopData Data = 2;
+  repeated ShopData Data = 1;
 }
 
 message ShopData {

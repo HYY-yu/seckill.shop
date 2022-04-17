@@ -6,6 +6,7 @@ import (
 
 	"github.com/HYY-yu/seckill.pkg/cache"
 	"github.com/HYY-yu/seckill.pkg/core"
+	"github.com/HYY-yu/seckill.pkg/core/middleware"
 	"github.com/HYY-yu/seckill.pkg/db"
 	grpc_zap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
@@ -18,7 +19,6 @@ import (
 	"github.com/HYY-yu/seckill.pkg/pkg/jaeger"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 
-	"github.com/HYY-yu/seckill.shop/internal/pkg/middleware"
 	"github.com/HYY-yu/seckill.shop/internal/service/shop/api/grpc_handler"
 	"github.com/HYY-yu/seckill.shop/internal/service/shop/api/grpc_handler/proto"
 	"github.com/HYY-yu/seckill.shop/internal/service/shop/api/handler"
@@ -87,15 +87,21 @@ func NewApiServer(logger *zap.Logger) (*Server, error) {
 	s.Cache = cacheRepo
 
 	// Jaeger
-	tp, err := jaeger.InitJaeger(config.Get().Server.ServerName, config.Get().Jaeger.UdpEndpoint)
+	tp, err := jaeger.InitJaeger(cfg.Server.ServerName, cfg.Jaeger.UdpEndpoint)
 	if err != nil {
 		logger.Error("jaeger error", zap.Error(err))
+	}
+	if cfg.Jaeger.StdOut {
+		tp, err = jaeger.InitStdOutForDevelopment(cfg.Server.ServerName, cfg.Jaeger.UdpEndpoint)
 	}
 	s.Trace = tp
 
 	// Metrics
-	metrics.InitMetrics(config.Get().Server.ServerName, "api")
-	metrics.InitGrpcMetrics()
+	metrics.InitMetrics(cfg.Server.ServerName, "api")
+	err = metrics.InitGrpcMetrics()
+	if err != nil {
+		panic(err)
+	}
 
 	// Repo Svc Handler
 	c, err := initHandlers(logger, s.DB, s.Cache)
@@ -107,7 +113,7 @@ func NewApiServer(logger *zap.Logger) (*Server, error) {
 	opts := make([]core.Option, 0)
 	opts = append(opts, core.WithEnableCors())
 	opts = append(opts, core.WithRecordMetrics(metrics.RecordMetrics))
-	if !config.Get().Server.Pprof {
+	if !cfg.Server.Pprof {
 		opts = append(opts, core.WithDisablePProf())
 	}
 	engine, err := core.New(cfg.Server.ServerName, logger, opts...)
@@ -115,7 +121,7 @@ func NewApiServer(logger *zap.Logger) (*Server, error) {
 		panic(err)
 	}
 	// Init HTTP Middles
-	s.HTTPMiddles = middleware.New(logger)
+	s.HTTPMiddles = middleware.New(logger, cfg.JWT.Secret)
 
 	// Route
 	s.Route(c, engine)

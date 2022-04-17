@@ -1,6 +1,8 @@
 package grpc_handler
 
 import (
+	"context"
+
 	"go.uber.org/zap"
 
 	"github.com/HYY-yu/seckill.shop/internal/service/shop/api/grpc_handler/proto"
@@ -20,7 +22,9 @@ func NewGoodsHandler(logger *zap.Logger, goodsSvc *svc.GoodsSvc) *GoodsHandler {
 	}
 }
 
-func (g GoodsHandler) List(req *proto.ListReq, server proto.Shop_ListServer) error {
-
-	return nil
+func (g GoodsHandler) List(ctx context.Context, req *proto.ListReq) (*proto.ListResp, error) {
+	data, err := g.goodsSvc.GrpcList(ctx, req)
+	return &proto.ListResp{
+		Data: data,
+	}, err
 }

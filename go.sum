@@ -47,8 +47,8 @@ github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03
 github.com/BurntSushi/toml v0.4.1 h1:GaI7EiDXDRfa8VshkTj7Fym7ha+y8/XxIgD2okUIjLw=
 github.com/BurntSushi/toml v0.4.1/go.mod h1:CxXYINrC8qIiEnFrOxCa7Jy5BFHlXnUU2pbicEuybxQ=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
-github.com/HYY-yu/seckill.pkg v1.1.3 h1:CfhARA7MEqYBBVBfo6XA4xYoZhDk+tyAH3ECV2xROaY=
-github.com/HYY-yu/seckill.pkg v1.1.3/go.mod h1:19Hw+syTscTqYtjszScZvNK20KerQcuLSHR1ntdlOC4=
+github.com/HYY-yu/seckill.pkg v1.1.6 h1:1vacPrZJaWC0fknIvUb/s/y2ouLn6tB9CHnWal9zqSg=
+github.com/HYY-yu/seckill.pkg v1.1.6/go.mod h1:19Hw+syTscTqYtjszScZvNK20KerQcuLSHR1ntdlOC4=
 github.com/HYY-yu/werror v1.0.1 h1:0z7gsC04VKnJGEfriQ8wYW7Sp8lmyw8ExAB/BjG8S5w=
 github.com/HYY-yu/werror v1.0.1/go.mod h1:bTIT9OZJBZYWzWk5j5sCBgxJ/iJsXTtPHXDmgm/Xkl4=
 github.com/KyleBanks/depth v1.2.1 h1:5h8fQADFrWtarTdtDudMmGsC7GPbOAu6RVB3ffsVFHc=

@@ -33,9 +33,7 @@ func NewGoodsSvc(db db.Repo, ca cache.Repo, goodsRepo repo.GoodsRepo) *GoodsSvc 
 	}
 }
 
-func (s *GoodsSvc) GrpcList(req *proto.ListReq) (shopData []*proto.ShopData, err error) {
-	// TODO 获取GRPC带Trace的上下文
-	ctx := context.TODO()
+func (s *GoodsSvc) GrpcList(ctx context.Context, req *proto.ListReq) (shopData []*proto.ShopData, err error) {
 	mgr := s.GoodsRepo.Mgr(ctx, s.DB.GetDb(ctx))
 
 	filter := make(map[string]interface{})

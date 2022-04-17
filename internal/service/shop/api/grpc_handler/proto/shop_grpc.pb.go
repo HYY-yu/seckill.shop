@@ -22,7 +22,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ShopClient interface {
-	List(ctx context.Context, in *ListReq, opts ...grpc.CallOption) (Shop_ListClient, error)
+	List(ctx context.Context, in *ListReq, opts ...grpc.CallOption) (*ListResp, error)
 }
 
 type shopClient struct {
@@ -33,43 +33,20 @@ func NewShopClient(cc grpc.ClientConnInterface) ShopClient {
 	return &shopClient{cc}
 }
 
-func (c *shopClient) List(ctx context.Context, in *ListReq, opts ...grpc.CallOption) (Shop_ListClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Shop_ServiceDesc.Streams[0], "/grpc_handler.Shop/List", opts...)
+func (c *shopClient) List(ctx context.Context, in *ListReq, opts ...grpc.CallOption) (*ListResp, error) {
+	out := new(ListResp)
+	err := c.cc.Invoke(ctx, "/grpc_handler.Shop/List", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &shopListClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type Shop_ListClient interface {
-	Recv() (*ListResp, error)
-	grpc.ClientStream
-}
-
-type shopListClient struct {
-	grpc.ClientStream
-}
-
-func (x *shopListClient) Recv() (*ListResp, error) {
-	m := new(ListResp)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
+	return out, nil
 }
 
 // ShopServer is the server API for Shop service.
 // All implementations must embed UnimplementedShopServer
 // for forward compatibility
 type ShopServer interface {
-	List(*ListReq, Shop_ListServer) error
+	List(context.Context, *ListReq) (*ListResp, error)
 	mustEmbedUnimplementedShopServer()
 }
 
@@ -77,8 +54,8 @@ type ShopServer interface {
 type UnimplementedShopServer struct {
 }
 
-func (UnimplementedShopServer) List(*ListReq, Shop_ListServer) error {
-	return status.Errorf(codes.Unimplemented, "method List not implemented")
+func (UnimplementedShopServer) List(context.Context, *ListReq) (*ListResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method List not implemented")
 }
 func (UnimplementedShopServer) mustEmbedUnimplementedShopServer() {}
 
@@ -93,25 +70,22 @@ func RegisterShopServer(s grpc.ServiceRegistrar, srv ShopServer) {
 	s.RegisterService(&Shop_ServiceDesc, srv)
 }
 
-func _Shop_List_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(ListReq)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
+func _Shop_List_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListReq)
+	if err := dec(in); err != nil {
+		return nil, err
 	}
-	return srv.(ShopServer).List(m, &shopListServer{stream})
-}
-
-type Shop_ListServer interface {
-	Send(*ListResp) error
-	grpc.ServerStream
-}
-
-type shopListServer struct {
-	grpc.ServerStream
-}
-
-func (x *shopListServer) Send(m *ListResp) error {
-	return x.ServerStream.SendMsg(m)
+	if interceptor == nil {
+		return srv.(ShopServer).List(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc_handler.Shop/List",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ShopServer).List(ctx, req.(*ListReq))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 // Shop_ServiceDesc is the grpc.ServiceDesc for Shop service.
@@ -120,13 +94,12 @@ func (x *shopListServer) Send(m *ListResp) error {
 var Shop_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "grpc_handler.Shop",
 	HandlerType: (*ShopServer)(nil),
-	Methods:     []grpc.MethodDesc{},
-	Streams: []grpc.StreamDesc{
+	Methods: []grpc.MethodDesc{
 		{
-			StreamName:    "List",
-			Handler:       _Shop_List_Handler,
-			ServerStreams: true,
+			MethodName: "List",
+			Handler:    _Shop_List_Handler,
 		},
 	},
+	Streams:  []grpc.StreamDesc{},
 	Metadata: "shop.proto",
 }
