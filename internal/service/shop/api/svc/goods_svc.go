@@ -13,9 +13,9 @@ import (
 	"github.com/HYY-yu/seckill.pkg/pkg/page"
 	"github.com/HYY-yu/seckill.pkg/pkg/response"
 
-	"github.com/HYY-yu/seckill.shop/internal/service/shop/api/grpc_handler/proto"
 	"github.com/HYY-yu/seckill.shop/internal/service/shop/api/repo"
 	"github.com/HYY-yu/seckill.shop/internal/service/shop/model"
+	"github.com/HYY-yu/seckill.shop/proto"
 )
 
 type GoodsSvc struct {

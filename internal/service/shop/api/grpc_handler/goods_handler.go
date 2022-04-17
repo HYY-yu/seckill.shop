@@ -5,8 +5,8 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/HYY-yu/seckill.shop/internal/service/shop/api/grpc_handler/proto"
 	"github.com/HYY-yu/seckill.shop/internal/service/shop/api/svc"
+	"github.com/HYY-yu/seckill.shop/proto"
 )
 
 type GoodsHandler struct {

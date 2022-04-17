@@ -20,9 +20,9 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 
 	"github.com/HYY-yu/seckill.shop/internal/service/shop/api/grpc_handler"
-	"github.com/HYY-yu/seckill.shop/internal/service/shop/api/grpc_handler/proto"
 	"github.com/HYY-yu/seckill.shop/internal/service/shop/api/handler"
 	"github.com/HYY-yu/seckill.shop/internal/service/shop/config"
+	"github.com/HYY-yu/seckill.shop/proto"
 )
 
 type Handlers struct {
