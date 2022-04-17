@@ -87,12 +87,14 @@ func NewApiServer(logger *zap.Logger) (*Server, error) {
 	s.Cache = cacheRepo
 
 	// Jaeger
-	tp, err := jaeger.InitJaeger(cfg.Server.ServerName, cfg.Jaeger.UdpEndpoint)
-	if err != nil {
-		logger.Error("jaeger error", zap.Error(err))
-	}
+	var tp *trace.TracerProvider
 	if cfg.Jaeger.StdOut {
 		tp, err = jaeger.InitStdOutForDevelopment(cfg.Server.ServerName, cfg.Jaeger.UdpEndpoint)
+	} else {
+		tp, err = jaeger.InitJaeger(cfg.Server.ServerName, cfg.Jaeger.UdpEndpoint)
+	}
+	if err != nil {
+		logger.Error("jaeger error", zap.Error(err))
 	}
 	s.Trace = tp
 
