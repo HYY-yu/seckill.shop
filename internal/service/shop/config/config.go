@@ -48,7 +48,7 @@ type Config struct {
 		Pprof      bool   `toml:"pprof"`
 		Grpc       struct {
 			Host string `toml:"host"`
-		}
+		} `toml:"grpc"`
 	} `toml:"server"`
 
 	Jaeger struct {

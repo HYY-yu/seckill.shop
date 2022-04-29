@@ -15,9 +15,10 @@ message ListReq {
   int32 PageNo = 1;
   int32 PageSize = 2;
   string SortBy = 3;
-  string FieldList = 4; // 数据节约，只返指定字段的数据
+  repeated string FieldList = 4; // 数据节约，只返指定字段的数据
   int64 ShopId = 5; // 按id筛选
   string ShopName = 6; // 按名称筛选
+  repeated int64 ShopIds = 7; // 按ids筛选，
 }
 
 message ListResp {

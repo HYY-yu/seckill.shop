@@ -8,7 +8,7 @@ import (
 	"github.com/google/wire"
 	"go.uber.org/zap"
 
-	"github.com/HYY-yu/seckill.pkg/cache"
+	"github.com/HYY-yu/seckill.pkg/cache_v2"
 	"github.com/HYY-yu/seckill.pkg/db"
 
 	"github.com/HYY-yu/seckill.shop/internal/service/shop/api/grpc_handler"
@@ -18,6 +18,6 @@ import (
 )
 
 // initHandlers init Handlers.
-func initHandlers(l *zap.Logger, d db.Repo, c cache.Repo) (*Handlers, error) {
+func initHandlers(l *zap.Logger, d db.Repo, c cache_v2.Repo) (*Handlers, error) {
 	panic(wire.Build(repo.NewGoodsRepo, svc.NewGoodsSvc, handler.NewGoodsHandler, grpc_handler.NewGoodsHandler, NewHandlers))
 }

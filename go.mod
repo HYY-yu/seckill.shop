@@ -1,9 +1,9 @@
 module github.com/HYY-yu/seckill.shop
 
-go 1.17
+go 1.18
 
 require (
-	github.com/HYY-yu/seckill.pkg v1.1.6
+	github.com/HYY-yu/seckill.pkg v1.1.7
 	github.com/fsnotify/fsnotify v1.5.1
 	github.com/gogf/gf/v2 v2.0.0-beta
 	github.com/google/wire v0.5.0
@@ -11,7 +11,7 @@ require (
 	github.com/spf13/cast v1.4.1
 	github.com/spf13/viper v1.9.0
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.31.0
-	go.opentelemetry.io/otel/sdk v1.3.0
+	go.opentelemetry.io/otel/sdk v1.4.1
 	go.uber.org/zap v1.20.0
 	google.golang.org/grpc v1.45.0
 	google.golang.org/protobuf v1.27.1
@@ -41,6 +41,8 @@ require (
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-playground/validator/v10 v10.9.0 // indirect
+	github.com/go-redis/redis/extra/rediscmd/v8 v8.11.5 // indirect
+	github.com/go-redis/redis/extra/redisotel/v8 v8.11.5 // indirect
 	github.com/go-redis/redis/v8 v8.11.5 // indirect
 	github.com/go-sql-driver/mysql v1.6.0 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect

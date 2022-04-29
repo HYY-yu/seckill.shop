@@ -40,8 +40,11 @@ func (obj *_GoodsMgr) ListGoods(
 		addWhere(filter[model.GoodsColumns.Name], util.IsNotZero, func(db *gorm.DB, v interface{}) *gorm.DB {
 			return db.Where(model.GoodsColumns.Name+" LIKE ?", "%"+cast.ToString(v)+"%")
 		}).
-		addWhere(filter[model.GoodsColumns.ID], util.IsNotZero, func(db *gorm.DB, i interface{}) *gorm.DB {
-			return db.Where(model.GoodsColumns.ID+" = ?", i)
+		addWhere(filter[model.GoodsColumns.ID], util.IsNotZero, func(db *gorm.DB, v interface{}) *gorm.DB {
+			return db.Where(model.GoodsColumns.ID+" = ?", v)
+		}).
+		addWhere(filter["ids"], util.IsNotZero, func(db *gorm.DB, v interface{}) *gorm.DB {
+			return db.Where(model.GoodsColumns.ID+" IN (?)", v)
 		}).
 		sort(sort, model.GoodsColumns.ID+" desc").
 		Where(model.GoodsColumns.DeleteTime + " = 0").
