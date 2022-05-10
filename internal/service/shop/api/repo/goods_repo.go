@@ -25,7 +25,7 @@ func NewGoodsRepo() GoodsRepo {
 }
 
 func (*goodsRepo) Mgr(ctx context.Context, db *gorm.DB) *_GoodsMgr {
-	goodsMgr := GoodsMgr(db).WithContext(ctx)
+	goodsMgr := GoodsMgr(ctx, db)
 	return goodsMgr
 }
 

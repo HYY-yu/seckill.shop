@@ -3,6 +3,7 @@ package repo
 import (
 	"context"
 	"fmt"
+
 	"gorm.io/gorm"
 
 	"github.com/HYY-yu/seckill.shop/internal/service/shop/model"
@@ -15,20 +16,12 @@ type _GoodsMgr struct {
 }
 
 // GoodsMgr open func
-func GoodsMgr(db *gorm.DB) *_GoodsMgr {
+func GoodsMgr(ctx context.Context, db *gorm.DB) *_GoodsMgr {
 	if db == nil {
 		panic(fmt.Errorf("GoodsMgr need init by db"))
 	}
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(ctx)
 	return &_GoodsMgr{_BaseMgr: &_BaseMgr{DB: db.Table("goods"), isRelated: globalIsRelated, ctx: ctx, cancel: cancel, timeout: -1}}
-}
-
-// WithContext set context to db
-func (obj *_GoodsMgr) WithContext(c context.Context) *_GoodsMgr {
-	if c != nil {
-		obj.ctx = c
-	}
-	return obj
 }
 
 func (obj *_GoodsMgr) WithSelects(idName string, selects ...string) *_GoodsMgr {
@@ -100,6 +93,15 @@ func (obj *_GoodsMgr) Gets() (results []*model.Goods, err error) {
 
 func (obj *_GoodsMgr) Count(count *int64) (tx *gorm.DB) {
 	return obj.DB.WithContext(obj.ctx).Model(model.Goods{}).Count(count)
+}
+
+func (obj *_GoodsMgr) HasRecord() (bool, error) {
+	var count int64
+	err := obj.DB.WithContext(obj.ctx).Model(model.Goods{}).Count(&count).Error
+	if err != nil {
+		return false, err
+	}
+	return count != 0, nil
 }
 
 // WithID id获取
