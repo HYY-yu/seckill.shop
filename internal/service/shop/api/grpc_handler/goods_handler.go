@@ -22,9 +22,17 @@ func NewGoodsHandler(logger *zap.Logger, goodsSvc *svc.GoodsSvc) *GoodsHandler {
 	}
 }
 
-func (g GoodsHandler) List(ctx context.Context, req *proto.ListReq) (*proto.ListResp, error) {
+func (g *GoodsHandler) List(ctx context.Context, req *proto.ListReq) (*proto.ListResp, error) {
 	data, err := g.goodsSvc.GrpcList(ctx, req)
 	return &proto.ListResp{
 		Data: data,
 	}, err
+}
+
+func (g *GoodsHandler) Incr(ctx context.Context, req *proto.IncrReq) (*proto.IncrResp, error) {
+	err := g.goodsSvc.IncrCount(ctx, req)
+	incrResp := &proto.IncrResp{
+		OK: err == nil,
+	}
+	return incrResp, err
 }

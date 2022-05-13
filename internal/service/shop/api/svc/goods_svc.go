@@ -2,6 +2,7 @@ package svc
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -30,6 +31,20 @@ func NewGoodsSvc(db db.Repo, ca cache_v2.Repo, goodsRepo repo.GoodsRepo) *GoodsS
 		Cache:     ca,
 		GoodsRepo: goodsRepo,
 	}
+}
+
+func (s *GoodsSvc) IncrCount(ctx context.Context, req *proto.IncrReq) error {
+	mgr := s.GoodsRepo.Mgr(ctx, s.DB.GetDb(ctx))
+
+	has, err := mgr.WithOptions(mgr.WithID(int(req.ShopId))).HasRecord()
+	if err != nil {
+		return err
+	}
+	if !has {
+		return fmt.Errorf("此商品不在数据库中 %d", req.ShopId)
+	}
+
+	return mgr.IncrCount(int(req.ShopId), int(req.N))
 }
 
 func (s *GoodsSvc) GrpcList(ctx context.Context, req *proto.ListReq) (shopData []*proto.ShopData, err error) {
