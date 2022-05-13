@@ -34,4 +34,4 @@ host = ":8082"
 
 [jaeger]
 udpEndpoint = "http://tempo.kube-ops.svc.cluster.local:14268/api/traces"
-stdOut = true
+stdOut = false
