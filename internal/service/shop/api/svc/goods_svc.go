@@ -2,11 +2,11 @@ package svc
 
 import (
 	"context"
+	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
-	"github.com/HYY-yu/seckill.pkg/cache"
+	"github.com/HYY-yu/seckill.pkg/cache_v2"
 	"github.com/HYY-yu/seckill.pkg/core"
 	"github.com/HYY-yu/seckill.pkg/db"
 	"github.com/HYY-yu/seckill.pkg/pkg/mysqlerr_helper"
@@ -20,17 +20,31 @@ import (
 
 type GoodsSvc struct {
 	DB    db.Repo
-	Cache cache.Repo
+	Cache cache_v2.Repo
 
 	GoodsRepo repo.GoodsRepo
 }
 
-func NewGoodsSvc(db db.Repo, ca cache.Repo, goodsRepo repo.GoodsRepo) *GoodsSvc {
+func NewGoodsSvc(db db.Repo, ca cache_v2.Repo, goodsRepo repo.GoodsRepo) *GoodsSvc {
 	return &GoodsSvc{
 		DB:        db,
 		Cache:     ca,
 		GoodsRepo: goodsRepo,
 	}
+}
+
+func (s *GoodsSvc) IncrCount(ctx context.Context, req *proto.IncrReq) error {
+	mgr := s.GoodsRepo.Mgr(ctx, s.DB.GetDb(ctx))
+
+	has, err := mgr.WithOptions(mgr.WithID(int(req.ShopId))).HasRecord()
+	if err != nil {
+		return err
+	}
+	if !has {
+		return fmt.Errorf("此商品不在数据库中 %d", req.ShopId)
+	}
+
+	return mgr.IncrCount(int(req.ShopId), int(req.N))
 }
 
 func (s *GoodsSvc) GrpcList(ctx context.Context, req *proto.ListReq) (shopData []*proto.ShopData, err error) {
@@ -39,11 +53,12 @@ func (s *GoodsSvc) GrpcList(ctx context.Context, req *proto.ListReq) (shopData [
 	filter := make(map[string]interface{})
 	filter[model.GoodsColumns.ID] = req.GetShopId()
 	filter[model.GoodsColumns.Name] = req.GetShopName()
+	filter["ids"] = req.GetShopIds()
 
 	// field list
-	fieldList := strings.Split(req.GetFieldList(), ",")
-	for i := range fieldList {
-		switch fieldList[i] {
+	fieldList := make([]string, len(req.GetFieldList()))
+	for i, e := range req.GetFieldList() {
+		switch e {
 		case model.GoodsColumns.Name:
 			fieldList[i] = model.GoodsColumns.Name
 		case model.GoodsColumns.Count:

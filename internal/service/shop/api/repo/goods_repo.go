@@ -25,7 +25,7 @@ func NewGoodsRepo() GoodsRepo {
 }
 
 func (*goodsRepo) Mgr(ctx context.Context, db *gorm.DB) *_GoodsMgr {
-	goodsMgr := GoodsMgr(db).WithContext(ctx)
+	goodsMgr := GoodsMgr(ctx, db)
 	return goodsMgr
 }
 
@@ -40,8 +40,11 @@ func (obj *_GoodsMgr) ListGoods(
 		addWhere(filter[model.GoodsColumns.Name], util.IsNotZero, func(db *gorm.DB, v interface{}) *gorm.DB {
 			return db.Where(model.GoodsColumns.Name+" LIKE ?", "%"+cast.ToString(v)+"%")
 		}).
-		addWhere(filter[model.GoodsColumns.ID], util.IsNotZero, func(db *gorm.DB, i interface{}) *gorm.DB {
-			return db.Where(model.GoodsColumns.ID+" = ?", i)
+		addWhere(filter[model.GoodsColumns.ID], util.IsNotZero, func(db *gorm.DB, v interface{}) *gorm.DB {
+			return db.Where(model.GoodsColumns.ID+" = ?", v)
+		}).
+		addWhere(filter["ids"], util.IsNotZero, func(db *gorm.DB, v interface{}) *gorm.DB {
+			return db.Where(model.GoodsColumns.ID+" IN (?)", v)
 		}).
 		sort(sort, model.GoodsColumns.ID+" desc").
 		Where(model.GoodsColumns.DeleteTime + " = 0").
@@ -62,7 +65,13 @@ func (obj *_GoodsMgr) CountGoods(
 			return db.Where(model.GoodsColumns.ID+" = ?", i)
 		}).
 		Where(model.GoodsColumns.DeleteTime + " = 0").
-		Debug().
 		Count(&count).Error
 	return
+}
+
+func (obj *_GoodsMgr) IncrCount(id int, count int) error {
+	db := obj.DB.WithContext(obj.ctx)
+
+	err := db.Where(model.GoodsColumns.ID+" = ?", id).UpdateColumn(model.GoodsColumns.Count, gorm.Expr(model.GoodsColumns.Count+"+ ?", count)).Error
+	return err
 }

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/HYY-yu/seckill.pkg/cache"
+	"github.com/HYY-yu/seckill.pkg/cache_v2"
 	"github.com/HYY-yu/seckill.pkg/core"
 	"github.com/HYY-yu/seckill.pkg/core/middleware"
 	"github.com/HYY-yu/seckill.pkg/db"
@@ -45,7 +45,7 @@ type Server struct {
 	HttpServer  *http.Server
 	GrpcServer  *grpc.Server
 	DB          db.Repo
-	Cache       cache.Repo
+	Cache       cache_v2.Repo
 	Trace       *trace.TracerProvider
 	HTTPMiddles middleware.Middleware
 }
@@ -73,7 +73,7 @@ func NewApiServer(logger *zap.Logger) (*Server, error) {
 	}
 	s.DB = dbRepo
 
-	cacheRepo, err := cache.New(cfg.Server.ServerName, &cache.RedisConf{
+	cacheRepo, err := cache_v2.New(cfg.Server.ServerName, &cache_v2.RedisConf{
 		Addr:         cfg.Redis.Addr,
 		Pass:         cfg.Redis.Pass,
 		Db:           cfg.Redis.Db,
