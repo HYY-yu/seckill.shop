@@ -22,8 +22,9 @@ poolSize = 10
 
 [log]
 logPath = "./sk-shop-goods.log"
-level = "debug" # DEBUG INFO WARN ERROR
+level = "DEBUG" # DEBUG INFO WARN ERROR
 stdout = true
+jsonFormat = false
 
 [server]
 serverName = "sk_shop_goods"
