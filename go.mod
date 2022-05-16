@@ -3,7 +3,7 @@ module github.com/HYY-yu/seckill.shop
 go 1.17
 
 require (
-	github.com/HYY-yu/seckill.pkg v1.2.1
+	github.com/HYY-yu/seckill.pkg v1.2.2
 	github.com/fsnotify/fsnotify v1.5.1
 	github.com/gogf/gf/v2 v2.0.0-beta
 	github.com/google/wire v0.5.0

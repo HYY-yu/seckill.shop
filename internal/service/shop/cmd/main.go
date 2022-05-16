@@ -110,6 +110,10 @@ func findLogConfigOption() []logger.Option {
 		result = append(result, logger.WithDisableConsole())
 	}
 
+	if C.Log.JsonFormat {
+		result = append(result, logger.WithJsonFormat())
+	}
+
 	switch C.Log.Level {
 	case "DEBUG":
 		result = append(result, logger.WithDebugLevel())

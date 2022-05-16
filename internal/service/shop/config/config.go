@@ -37,9 +37,10 @@ type Config struct {
 	} `toml:"jwt"`
 
 	Log struct {
-		LogPath string `toml:"logPath"`
-		Level   string `toml:"logPath"`
-		Stdout  bool   `toml:"logPath"`
+		LogPath    string `toml:"logPath"`
+		Level      string `toml:"level"`
+		Stdout     bool   `toml:"stdout"`
+		JsonFormat bool   `toml:"jsonFormat"`
 	} `toml:"log"`
 
 	Server struct {
