@@ -3,8 +3,9 @@ package api
 import (
 	"errors"
 	"net/http"
+	"strings"
 
-	"github.com/HYY-yu/seckill.pkg/cache_v2"
+	"github.com/HYY-yu/seckill.pkg/cache"
 	"github.com/HYY-yu/seckill.pkg/core"
 	"github.com/HYY-yu/seckill.pkg/core/middleware"
 	"github.com/HYY-yu/seckill.pkg/db"
@@ -45,7 +46,7 @@ type Server struct {
 	HttpServer  *http.Server
 	GrpcServer  *grpc.Server
 	DB          db.Repo
-	Cache       cache_v2.Repo
+	Cache       cache.Repo
 	Trace       *trace.TracerProvider
 	HTTPMiddles middleware.Middleware
 }
@@ -73,7 +74,7 @@ func NewApiServer(logger *zap.Logger) (*Server, error) {
 	}
 	s.DB = dbRepo
 
-	cacheRepo, err := cache_v2.New(cfg.Server.ServerName, &cache_v2.RedisConf{
+	cacheRepo, err := cache.New(cfg.Server.ServerName, &cache.RedisConf{
 		Addr:         cfg.Redis.Addr,
 		Pass:         cfg.Redis.Pass,
 		Db:           cfg.Redis.Db,
@@ -99,7 +100,8 @@ func NewApiServer(logger *zap.Logger) (*Server, error) {
 	s.Trace = tp
 
 	// Metrics
-	metrics.InitMetrics(cfg.Server.ServerName, "api")
+	sn := strings.Split(cfg.Server.ServerName, "_")
+	metrics.InitMetrics(strings.Join(sn[:2], "_"))
 	err = metrics.InitGrpcMetrics()
 	if err != nil {
 		panic(err)
@@ -147,6 +149,8 @@ func NewApiServer(logger *zap.Logger) (*Server, error) {
 		metrics.GRPCMetrics.StreamServerInterceptor(),
 	))
 	grpcServer := grpc.NewServer(optsGrpc...)
+	metrics.SetToGrpcServer(grpcServer)
+
 	proto.RegisterShopServer(grpcServer, c.grpcGoodsHandler)
 	s.GrpcServer = grpcServer
 

@@ -7,7 +7,7 @@
 package api
 
 import (
-	"github.com/HYY-yu/seckill.pkg/cache_v2"
+	"github.com/HYY-yu/seckill.pkg/cache"
 	"github.com/HYY-yu/seckill.pkg/db"
 	"go.uber.org/zap"
 
@@ -20,7 +20,7 @@ import (
 // Injectors from wire.go:
 
 // initHandlers init Handlers.
-func initHandlers(l *zap.Logger, d db.Repo, c cache_v2.Repo) (*Handlers, error) {
+func initHandlers(l *zap.Logger, d db.Repo, c cache.Repo) (*Handlers, error) {
 	goodsRepo := repo.NewGoodsRepo()
 	goodsSvc := svc.NewGoodsSvc(d, c, goodsRepo)
 	goodsHandler := handler.NewGoodsHandler(goodsSvc)
