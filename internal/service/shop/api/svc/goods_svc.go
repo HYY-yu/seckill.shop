@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/HYY-yu/seckill.pkg/cache_v2"
+	"github.com/HYY-yu/seckill.pkg/cache"
 	"github.com/HYY-yu/seckill.pkg/core"
 	"github.com/HYY-yu/seckill.pkg/db"
 	"github.com/HYY-yu/seckill.pkg/pkg/mysqlerr_helper"
@@ -20,12 +20,12 @@ import (
 
 type GoodsSvc struct {
 	DB    db.Repo
-	Cache cache_v2.Repo
+	Cache cache.Repo
 
 	GoodsRepo repo.GoodsRepo
 }
 
-func NewGoodsSvc(db db.Repo, ca cache_v2.Repo, goodsRepo repo.GoodsRepo) *GoodsSvc {
+func NewGoodsSvc(db db.Repo, ca cache.Repo, goodsRepo repo.GoodsRepo) *GoodsSvc {
 	return &GoodsSvc{
 		DB:        db,
 		Cache:     ca,
